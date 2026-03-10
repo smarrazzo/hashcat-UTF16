@@ -3230,6 +3230,9 @@ typedef struct module_ctx
 
   u64         (*module_bridge_type)             (const hashconfig_t *, const user_options_t *, const user_options_extra_t *);
   const char *(*module_bridge_name)             (const hashconfig_t *, const user_options_t *, const user_options_extra_t *);
+  
+  const char *(*module_iconv)                   (const hashconfig_t *, const user_options_t *, const user_options_extra_t *);
+
 
 } module_ctx_t;
 

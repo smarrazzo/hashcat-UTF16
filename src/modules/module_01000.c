@@ -200,4 +200,5 @@ void module_init (module_ctx_t *module_ctx)
   module_ctx->module_tmp_size                 = MODULE_DEFAULT;
   module_ctx->module_unstable_warning         = MODULE_DEFAULT;
   module_ctx->module_warmup_disable           = MODULE_DEFAULT;
+  module_ctx->module_iconv                    = MODULE_DEFAULT;
 }
