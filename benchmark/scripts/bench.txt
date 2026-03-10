@@ -1,0 +1,12 @@
+hashcat.exe -a 0 -m 1000 ..\test\hash_ntlm.txt ..\test\dico_bench.txt -O -w 3 --potfile-disable -o out
+1/300
+hashcat.exe -a 0 -m 1000 ..\test\hash_ntlm.txt ..\test\dico_bench.txt -r ..\test\OneRuleToRuleThemAll.rule.txt  -O -w 3 --potfile-disable -o out
+32/300
+hashcat.exe -a 0 -m 900 ..\test\hash_ntlm.txt ..\test\dico_bench.txt  --encoding-to=utf16le -O -w 3 --potfile-disable -o out
+19/300
+hashcat.exe -a 0 -m 900 ..\test\hash_ntlm.txt ..\test\dico_bench.txt -r ..\test\OneRuleToRuleThemAll.rule.txt  --encoding-to=utf16le -O -w 3 --potfile-disable -o out
+96/300
+hashcat.exe -a 0 -m 1001 ..\test\hash_ntlm.txt ..\test\dico_bench.txt -O -w 3 --potfile-disable -o out
+19/300
+hashcat.exe -a 0 -m 1001 ..\test\hash_ntlm.txt ..\test\dico_bench.txt -r ..\test\OneRuleToRuleThemAll.rule.txt  -O -w 3 --potfile-disable -o out
+213/300
