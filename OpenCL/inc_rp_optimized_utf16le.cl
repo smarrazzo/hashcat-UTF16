@@ -8,7 +8,6 @@
 #include "inc_platform.h"
 #include "inc_common.h"
 #include "inc_rp_optimized_utf16le.h"
-#include "inc_rp_common.cl"
 
 #ifndef MAYBE_UNUSED
 #define MAYBE_UNUSED
@@ -1541,76 +1540,76 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
   switch (offset_switch)
   {
     case 0:
-      s15 = hc_2bytesalign_S (src_r32, src_r33, selector);
-      s14 = hc_2bytesalign_S (src_r31, src_r32, selector);
-      s13 = hc_2bytesalign_S (src_r30, src_r31, selector);
-      s12 = hc_2bytesalign_S (src_r23, src_r30, selector);
-      s11 = hc_2bytesalign_S (src_r22, src_r23, selector);
-      s10 = hc_2bytesalign_S (src_r21, src_r22, selector);
-      s9 =  hc_2bytesalign_S (src_r20, src_r21, selector);
-      s8 =  hc_2bytesalign_S (src_r13, src_r20, selector);
-      s7 =  hc_2bytesalign_S (src_r12, src_r13, selector);
-      s6 =  hc_2bytesalign_S (src_r11, src_r12, selector);
-      s5 =  hc_2bytesalign_S (src_r10, src_r11, selector);
-      s4 =  hc_2bytesalign_S (src_r03, src_r10, selector);
-      s3 =  hc_2bytesalign_S (src_r02, src_r03, selector);
-      s2 =  hc_2bytesalign_S (src_r01, src_r02, selector);
-      s1 =  hc_2bytesalign_S (src_r00, src_r01, selector);
-      s0 =  hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r32, src_r33, offset);
+      s14 = hc_2bytesalign_S (src_r31, src_r32, offset);
+      s13 = hc_2bytesalign_S (src_r30, src_r31, offset);
+      s12 = hc_2bytesalign_S (src_r23, src_r30, offset);
+      s11 = hc_2bytesalign_S (src_r22, src_r23, offset);
+      s10 = hc_2bytesalign_S (src_r21, src_r22, offset);
+      s9 =  hc_2bytesalign_S (src_r20, src_r21, offset);
+      s8 =  hc_2bytesalign_S (src_r13, src_r20, offset);
+      s7 =  hc_2bytesalign_S (src_r12, src_r13, offset);
+      s6 =  hc_2bytesalign_S (src_r11, src_r12, offset);
+      s5 =  hc_2bytesalign_S (src_r10, src_r11, offset);
+      s4 =  hc_2bytesalign_S (src_r03, src_r10, offset);
+      s3 =  hc_2bytesalign_S (src_r02, src_r03, offset);
+      s2 =  hc_2bytesalign_S (src_r01, src_r02, offset);
+      s1 =  hc_2bytesalign_S (src_r00, src_r01, offset);
+      s0 =  hc_2bytesalign_S (      0, src_r00, offset);
       break;
 
     case 1:
-      s15 = hc_2bytesalign_S (src_r31, src_r32, selector);
-      s14 = hc_2bytesalign_S (src_r30, src_r31, selector);
-      s13 = hc_2bytesalign_S (src_r23, src_r30, selector);
-      s12 = hc_2bytesalign_S (src_r22, src_r23, selector);
-      s11 = hc_2bytesalign_S (src_r21, src_r22, selector);
-      s10 = hc_2bytesalign_S (src_r20, src_r21, selector);
-      s9 = hc_2bytesalign_S (src_r13, src_r20, selector);
-      s8 = hc_2bytesalign_S (src_r12, src_r13, selector);
-      s7 = hc_2bytesalign_S (src_r11, src_r12, selector);
-      s6 = hc_2bytesalign_S (src_r10, src_r11, selector);
-      s5 = hc_2bytesalign_S (src_r03, src_r10, selector);
-      s4 = hc_2bytesalign_S (src_r02, src_r03, selector);
-      s3 = hc_2bytesalign_S (src_r01, src_r02, selector);
-      s2 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s1 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r31, src_r32, offset);
+      s14 = hc_2bytesalign_S (src_r30, src_r31, offset);
+      s13 = hc_2bytesalign_S (src_r23, src_r30, offset);
+      s12 = hc_2bytesalign_S (src_r22, src_r23, offset);
+      s11 = hc_2bytesalign_S (src_r21, src_r22, offset);
+      s10 = hc_2bytesalign_S (src_r20, src_r21, offset);
+      s9 = hc_2bytesalign_S (src_r13, src_r20, offset);
+      s8 = hc_2bytesalign_S (src_r12, src_r13, offset);
+      s7 = hc_2bytesalign_S (src_r11, src_r12, offset);
+      s6 = hc_2bytesalign_S (src_r10, src_r11, offset);
+      s5 = hc_2bytesalign_S (src_r03, src_r10, offset);
+      s4 = hc_2bytesalign_S (src_r02, src_r03, offset);
+      s3 = hc_2bytesalign_S (src_r01, src_r02, offset);
+      s2 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s1 = hc_2bytesalign_S (      0, src_r00, offset);
       s0 = 0;
       break;
 
     case 2:
-      s15 = hc_2bytesalign_S (src_r30, src_r31, selector);
-      s14 = hc_2bytesalign_S (src_r23, src_r30, selector);
-      s13 = hc_2bytesalign_S (src_r22, src_r23, selector);
-      s12 = hc_2bytesalign_S (src_r21, src_r22, selector);
-      s11 = hc_2bytesalign_S (src_r20, src_r21, selector);
-      s10 = hc_2bytesalign_S (src_r13, src_r20, selector);
-      s9 = hc_2bytesalign_S (src_r12, src_r13, selector);
-      s8 = hc_2bytesalign_S (src_r11, src_r12, selector);
-      s7 = hc_2bytesalign_S (src_r10, src_r11, selector);
-      s6 = hc_2bytesalign_S (src_r03, src_r10, selector);
-      s5 = hc_2bytesalign_S (src_r02, src_r03, selector);
-      s4 = hc_2bytesalign_S (src_r01, src_r02, selector);
-      s3 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s2 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r30, src_r31, offset);
+      s14 = hc_2bytesalign_S (src_r23, src_r30, offset);
+      s13 = hc_2bytesalign_S (src_r22, src_r23, offset);
+      s12 = hc_2bytesalign_S (src_r21, src_r22, offset);
+      s11 = hc_2bytesalign_S (src_r20, src_r21, offset);
+      s10 = hc_2bytesalign_S (src_r13, src_r20, offset);
+      s9 = hc_2bytesalign_S (src_r12, src_r13, offset);
+      s8 = hc_2bytesalign_S (src_r11, src_r12, offset);
+      s7 = hc_2bytesalign_S (src_r10, src_r11, offset);
+      s6 = hc_2bytesalign_S (src_r03, src_r10, offset);
+      s5 = hc_2bytesalign_S (src_r02, src_r03, offset);
+      s4 = hc_2bytesalign_S (src_r01, src_r02, offset);
+      s3 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s2 = hc_2bytesalign_S (      0, src_r00, offset);
       s1 = 0;
       s0 = 0;
       break;
 
     case 3:
-      s15 = hc_2bytesalign_S (src_r23, src_r30, selector);
-      s14 = hc_2bytesalign_S (src_r22, src_r23, selector);
-      s13 = hc_2bytesalign_S (src_r21, src_r22, selector);
-      s12 = hc_2bytesalign_S (src_r20, src_r21, selector);
-      s11 = hc_2bytesalign_S (src_r13, src_r20, selector);
-      s10 = hc_2bytesalign_S (src_r12, src_r13, selector);
-      s9 = hc_2bytesalign_S (src_r11, src_r12, selector);
-      s8 = hc_2bytesalign_S (src_r10, src_r11, selector);
-      s7 = hc_2bytesalign_S (src_r03, src_r10, selector);
-      s6 = hc_2bytesalign_S (src_r02, src_r03, selector);
-      s5 = hc_2bytesalign_S (src_r01, src_r02, selector);
-      s4 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s3 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r23, src_r30, offset);
+      s14 = hc_2bytesalign_S (src_r22, src_r23, offset);
+      s13 = hc_2bytesalign_S (src_r21, src_r22, offset);
+      s12 = hc_2bytesalign_S (src_r20, src_r21, offset);
+      s11 = hc_2bytesalign_S (src_r13, src_r20, offset);
+      s10 = hc_2bytesalign_S (src_r12, src_r13, offset);
+      s9 = hc_2bytesalign_S (src_r11, src_r12, offset);
+      s8 = hc_2bytesalign_S (src_r10, src_r11, offset);
+      s7 = hc_2bytesalign_S (src_r03, src_r10, offset);
+      s6 = hc_2bytesalign_S (src_r02, src_r03, offset);
+      s5 = hc_2bytesalign_S (src_r01, src_r02, offset);
+      s4 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s3 = hc_2bytesalign_S (      0, src_r00, offset);
       s2 = 0;
       s1 = 0;
       s0 = 0;
@@ -1618,18 +1617,18 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
       break;
 
     case 4:
-      s15 = hc_2bytesalign_S (src_r22, src_r23, selector);
-      s14 = hc_2bytesalign_S (src_r21, src_r22, selector);
-      s13 = hc_2bytesalign_S (src_r20, src_r21, selector);
-      s12 = hc_2bytesalign_S (src_r13, src_r20, selector);
-      s11 = hc_2bytesalign_S (src_r12, src_r13, selector);
-      s10 = hc_2bytesalign_S (src_r11, src_r12, selector);
-      s9 = hc_2bytesalign_S (src_r10, src_r11, selector);
-      s8 = hc_2bytesalign_S (src_r03, src_r10, selector);
-      s7 = hc_2bytesalign_S (src_r02, src_r03, selector);
-      s6 = hc_2bytesalign_S (src_r01, src_r02, selector);
-      s5 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s4 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r22, src_r23, offset);
+      s14 = hc_2bytesalign_S (src_r21, src_r22, offset);
+      s13 = hc_2bytesalign_S (src_r20, src_r21, offset);
+      s12 = hc_2bytesalign_S (src_r13, src_r20, offset);
+      s11 = hc_2bytesalign_S (src_r12, src_r13, offset);
+      s10 = hc_2bytesalign_S (src_r11, src_r12, offset);
+      s9 = hc_2bytesalign_S (src_r10, src_r11, offset);
+      s8 = hc_2bytesalign_S (src_r03, src_r10, offset);
+      s7 = hc_2bytesalign_S (src_r02, src_r03, offset);
+      s6 = hc_2bytesalign_S (src_r01, src_r02, offset);
+      s5 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s4 = hc_2bytesalign_S (      0, src_r00, offset);
       s3 = 0;
       s2 = 0;
       s1 = 0;
@@ -1637,17 +1636,17 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
       break;
 
     case 5:
-      s15 = hc_2bytesalign_S (src_r21, src_r22, selector);
-      s14 = hc_2bytesalign_S (src_r20, src_r21, selector);
-      s13 = hc_2bytesalign_S (src_r13, src_r20, selector);
-      s12 = hc_2bytesalign_S (src_r12, src_r13, selector);
-      s11 = hc_2bytesalign_S (src_r11, src_r12, selector);
-      s10 = hc_2bytesalign_S (src_r10, src_r11, selector);
-      s9 = hc_2bytesalign_S (src_r03, src_r10, selector);
-      s8 = hc_2bytesalign_S (src_r02, src_r03, selector);
-      s7 = hc_2bytesalign_S (src_r01, src_r02, selector);
-      s6 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s5 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r21, src_r22, offset);
+      s14 = hc_2bytesalign_S (src_r20, src_r21, offset);
+      s13 = hc_2bytesalign_S (src_r13, src_r20, offset);
+      s12 = hc_2bytesalign_S (src_r12, src_r13, offset);
+      s11 = hc_2bytesalign_S (src_r11, src_r12, offset);
+      s10 = hc_2bytesalign_S (src_r10, src_r11, offset);
+      s9 = hc_2bytesalign_S (src_r03, src_r10, offset);
+      s8 = hc_2bytesalign_S (src_r02, src_r03, offset);
+      s7 = hc_2bytesalign_S (src_r01, src_r02, offset);
+      s6 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s5 = hc_2bytesalign_S (      0, src_r00, offset);
       s4 = 0;
       s3 = 0;
       s2 = 0;
@@ -1656,16 +1655,16 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
       break;
 
     case 6:
-      s15 = hc_2bytesalign_S (src_r20, src_r21, selector);
-      s14 = hc_2bytesalign_S (src_r13, src_r20, selector);
-      s13 = hc_2bytesalign_S (src_r12, src_r13, selector);
-      s12 = hc_2bytesalign_S (src_r11, src_r12, selector);
-      s11 = hc_2bytesalign_S (src_r10, src_r11, selector);
-      s10 = hc_2bytesalign_S (src_r03, src_r10, selector);
-      s9 = hc_2bytesalign_S (src_r02, src_r03, selector);
-      s8 = hc_2bytesalign_S (src_r01, src_r02, selector);
-      s7 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s6 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r20, src_r21, offset);
+      s14 = hc_2bytesalign_S (src_r13, src_r20, offset);
+      s13 = hc_2bytesalign_S (src_r12, src_r13, offset);
+      s12 = hc_2bytesalign_S (src_r11, src_r12, offset);
+      s11 = hc_2bytesalign_S (src_r10, src_r11, offset);
+      s10 = hc_2bytesalign_S (src_r03, src_r10, offset);
+      s9 = hc_2bytesalign_S (src_r02, src_r03, offset);
+      s8 = hc_2bytesalign_S (src_r01, src_r02, offset);
+      s7 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s6 = hc_2bytesalign_S (      0, src_r00, offset);
       s5 = 0;
       s4 = 0;
       s3 = 0;
@@ -1675,15 +1674,15 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
       break;
 
     case 7:
-      s15 = hc_2bytesalign_S (src_r13, src_r20, selector);
-      s14 = hc_2bytesalign_S (src_r12, src_r13, selector);
-      s13 = hc_2bytesalign_S (src_r11, src_r12, selector);
-      s12 = hc_2bytesalign_S (src_r10, src_r11, selector);
-      s11 = hc_2bytesalign_S (src_r03, src_r10, selector);
-      s10 = hc_2bytesalign_S (src_r02, src_r03, selector);
-      s9 = hc_2bytesalign_S (src_r01, src_r02, selector);
-      s8 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s7 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r13, src_r20, offset);
+      s14 = hc_2bytesalign_S (src_r12, src_r13, offset);
+      s13 = hc_2bytesalign_S (src_r11, src_r12, offset);
+      s12 = hc_2bytesalign_S (src_r10, src_r11, offset);
+      s11 = hc_2bytesalign_S (src_r03, src_r10, offset);
+      s10 = hc_2bytesalign_S (src_r02, src_r03, offset);
+      s9 = hc_2bytesalign_S (src_r01, src_r02, offset);
+      s8 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s7 = hc_2bytesalign_S (      0, src_r00, offset);
       s6 = 0;
       s5 = 0;
       s4 = 0;
@@ -1694,14 +1693,14 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
       break;
 
     case 8:
-      s15 = hc_2bytesalign_S (src_r12, src_r13, selector);
-      s14 = hc_2bytesalign_S (src_r11, src_r12, selector);
-      s13 = hc_2bytesalign_S (src_r10, src_r11, selector);
-      s12 = hc_2bytesalign_S (src_r03, src_r10, selector);
-      s11 = hc_2bytesalign_S (src_r02, src_r03, selector);
-      s10 = hc_2bytesalign_S (src_r01, src_r02, selector);
-      s9 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s8 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r12, src_r13, offset);
+      s14 = hc_2bytesalign_S (src_r11, src_r12, offset);
+      s13 = hc_2bytesalign_S (src_r10, src_r11, offset);
+      s12 = hc_2bytesalign_S (src_r03, src_r10, offset);
+      s11 = hc_2bytesalign_S (src_r02, src_r03, offset);
+      s10 = hc_2bytesalign_S (src_r01, src_r02, offset);
+      s9 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s8 = hc_2bytesalign_S (      0, src_r00, offset);
       s7 = 0;
       s6 = 0;
       s5 = 0;
@@ -1713,13 +1712,13 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
       break;
 
     case 9:
-      s15 = hc_2bytesalign_S (src_r11, src_r12, selector);
-      s14 = hc_2bytesalign_S (src_r10, src_r11, selector);
-      s13 = hc_2bytesalign_S (src_r03, src_r10, selector);
-      s12 = hc_2bytesalign_S (src_r02, src_r03, selector);
-      s11 = hc_2bytesalign_S (src_r01, src_r02, selector);
-      s10 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s9 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r11, src_r12, offset);
+      s14 = hc_2bytesalign_S (src_r10, src_r11, offset);
+      s13 = hc_2bytesalign_S (src_r03, src_r10, offset);
+      s12 = hc_2bytesalign_S (src_r02, src_r03, offset);
+      s11 = hc_2bytesalign_S (src_r01, src_r02, offset);
+      s10 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s9 = hc_2bytesalign_S (      0, src_r00, offset);
       s8 = 0;
       s7 = 0;
       s6 = 0;
@@ -1732,12 +1731,12 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
       break;
 
     case 10:
-      s15 = hc_2bytesalign_S (src_r10, src_r11, selector);
-      s14 = hc_2bytesalign_S (src_r03, src_r10, selector);
-      s13 = hc_2bytesalign_S (src_r02, src_r03, selector);
-      s12 = hc_2bytesalign_S (src_r01, src_r02, selector);
-      s11 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s10 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r10, src_r11, offset);
+      s14 = hc_2bytesalign_S (src_r03, src_r10, offset);
+      s13 = hc_2bytesalign_S (src_r02, src_r03, offset);
+      s12 = hc_2bytesalign_S (src_r01, src_r02, offset);
+      s11 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s10 = hc_2bytesalign_S (      0, src_r00, offset);
       s9 = 0;
       s8 = 0;
       s7 = 0;
@@ -1751,11 +1750,11 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
       break;
 
     case 11:
-      s15 = hc_2bytesalign_S (src_r03, src_r10, selector);
-      s14 = hc_2bytesalign_S (src_r02, src_r03, selector);
-      s13 = hc_2bytesalign_S (src_r01, src_r02, selector);
-      s12 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s11 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r03, src_r10, offset);
+      s14 = hc_2bytesalign_S (src_r02, src_r03, offset);
+      s13 = hc_2bytesalign_S (src_r01, src_r02, offset);
+      s12 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s11 = hc_2bytesalign_S (      0, src_r00, offset);
       s10 = 0;
       s9 = 0;
       s8 = 0;
@@ -1770,10 +1769,10 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
       break;
 
     case 12:
-      s15 = hc_2bytesalign_S (src_r02, src_r03, selector);
-      s14 = hc_2bytesalign_S (src_r01, src_r02, selector);
-      s13 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s12 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r02, src_r03, offset);
+      s14 = hc_2bytesalign_S (src_r01, src_r02, offset);
+      s13 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s12 = hc_2bytesalign_S (      0, src_r00, offset);
       s11 = 0;
       s10 = 0;
       s9 = 0;
@@ -1789,9 +1788,9 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
       break;
 
     case 13:
-      s15 = hc_2bytesalign_S (src_r01, src_r02, selector);
-      s14 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s13 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r01, src_r02, offset);
+      s14 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s13 = hc_2bytesalign_S (      0, src_r00, offset);
       s12 = 0;
       s11 = 0;
       s10 = 0;
@@ -1808,8 +1807,8 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
       break;
 
     case 14:
-      s15 = hc_2bytesalign_S (src_r00, src_r01, selector);
-      s14 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (src_r00, src_r01, offset);
+      s14 = hc_2bytesalign_S (      0, src_r00, offset);
       s13 = 0;
       s12 = 0;
       s11 = 0;
@@ -1827,7 +1826,7 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
       break;
 
     case 15:
-      s15 = hc_2bytesalign_S (      0, src_r00, selector);
+      s15 = hc_2bytesalign_S (      0, src_r00, offset);
       s14 = 0;
       s13 = 0;
       s12 = 0;
@@ -3567,12 +3566,12 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_s_utf16le (MAYBE_UNUSED c
 
 DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_utf16le (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len) //TODO
 {
-       if ((u8)p0 == 'l') return rule_op_mangle_replace_class_l_utf16le   (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'u') return rule_op_mangle_replace_class_u_utf16le  (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'd') return rule_op_mangle_replace_class_d_utf16le  (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'h') return rule_op_mangle_replace_class_lh_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'H') return rule_op_mangle_replace_class_uh_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 's') return rule_op_mangle_replace_class_s_utf16le  (p0, p1, buf0, buf1, in_len);
+       if ((u8)p0 == 'l') return rule_op_mangle_replace_class_l_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'u') return rule_op_mangle_replace_class_u_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'd') return rule_op_mangle_replace_class_d_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'h') return rule_op_mangle_replace_class_lh_utf16le (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'H') return rule_op_mangle_replace_class_uh_utf16le (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 's') return rule_op_mangle_replace_class_s_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
 
   return in_len;
 }
@@ -3906,12 +3905,12 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_purgechar_class_s_utf16le (MAYBE_UNUSED
 
 DECLSPEC HC_INLINE_RP u32 rule_op_mangle_purgechar_class_utf16le  (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len) 
 {
-  else if ((u8)p0 == 'u') return rule_op_mangle_purgechar_class_u_utf16le (p0, p1, buf0, buf1, in_len);
-       if ((u8)p0 == 'l') return rule_op_mangle_purgechar_class_l_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'd') return rule_op_mangle_purgechar_class_d_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'h') return rule_op_mangle_purgechar_class_lh_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'H') return rule_op_mangle_purgechar_class_uh_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 's') return rule_op_mangle_purgechar_class_s_utf16le (p0, p1, buf0, buf1, in_len);
+       if ((u8)p0 == 'l') return rule_op_mangle_purgechar_class_l_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'u') return rule_op_mangle_purgechar_class_u_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'd') return rule_op_mangle_purgechar_class_d_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'h') return rule_op_mangle_purgechar_class_lh_utf16le (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'H') return rule_op_mangle_purgechar_class_uh_utf16le (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 's') return rule_op_mangle_purgechar_class_s_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
 
   return in_len;
 }
@@ -4999,12 +4998,12 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_title_sep_class_s_utf16le (MAYBE_UNUSED
 
 DECLSPEC HC_INLINE_RP u32 rule_op_mangle_title_sep_class_utf16le  (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len) //TODO
 {
-       if ((u8)p0 == 'l') return rule_op_mangle_title_sep_class_l_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'u') return rule_op_mangle_title_sep_class_u_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'd') return rule_op_mangle_title_sep_class_d_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'h') return rule_op_mangle_title_sep_class_lh_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'H') return rule_op_mangle_title_sep_class_uh_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 's') return rule_op_mangle_title_sep_class_s_utf16le (p0, p1, buf0, buf1, in_len);
+       if ((u8)p0 == 'l') return rule_op_mangle_title_sep_class_l_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'u') return rule_op_mangle_title_sep_class_u_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'd') return rule_op_mangle_title_sep_class_d_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'h') return rule_op_mangle_title_sep_class_lh_utf16le (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'H') return rule_op_mangle_title_sep_class_uh_utf16le (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 's') return rule_op_mangle_title_sep_class_s_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
 
   return in_len;
 }

@@ -1954,7 +1954,7 @@ DECLSPEC u32 hc_bfe_S (const u32 a, const u32 b, const u32 c)
   return r;
 }
 
-DECLSPEC u64 hc_bfe_S64 (const u64 a, const u64 b, const u32 c)
+DECLSPEC u64 hc_bfe_S64 (const u64 a, const u64 b, const u64 c)
 {
   u64 r = 0;
 
@@ -2263,7 +2263,7 @@ DECLSPEC u32 hc_bfe_S (const u32 a, const u32 b, const u32 c)
   #undef BFE
 }
 
-DECLSPEC u64 hc_bfe_S64 (const u64 a, const u64 b, const u32 c) // todo
+DECLSPEC u64 hc_bfe_S64 (const u64 a, const u64 b, const u64 c) // todo
 {
   #define BIT(x)      (1u << (x))
   #define BIT_MASK(x) (BIT (x) - 1)
