@@ -13,10 +13,16 @@
 #include M2S(INCLUDE_PATH/inc_rp_utf16le.h)
 #include M2S(INCLUDE_PATH/inc_rp_utf16le.cl)
 #include M2S(INCLUDE_PATH/inc_scalar.cl)
-#include M2S(INCLUDE_PATH/inc_hash_md4.cl)
+#include M2S(INCLUDE_PATH/inc_hash_sha256.cl)
 #endif
 
-KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
+typedef struct win8phone
+{
+  u32 salt_buf[32];
+
+} win8phone_t;
+
+KERNEL_FQ void m13802_mxx (KERN_ATTR_RULES_ESALT (win8phone_t))
 {
   /**
    * modifier
@@ -43,13 +49,15 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
 
     tmp.pw_len = apply_rules_utf16le (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
 
-    md4_ctx_t ctx;
+    sha256_ctx_t ctx;
 
-    md4_init (&ctx);
+    sha256_init (&ctx);
 
-    md4_update (&ctx, tmp.i, tmp.pw_len);
+    sha256_update_swap (&ctx, tmp.i, tmp.pw_len);
 
-    md4_final (&ctx);
+    sha256_update_global (&ctx, esalt_bufs[DIGESTS_OFFSET_HOST].salt_buf, 128);
+
+    sha256_final (&ctx);
 
     const u32 r0 = ctx.h[DGST_R0];
     const u32 r1 = ctx.h[DGST_R1];
@@ -60,7 +68,7 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
   }
 }
 
-KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
+KERNEL_FQ void m13802_sxx (KERN_ATTR_RULES_ESALT (win8phone_t))
 {
   /**
    * modifier
@@ -97,15 +105,17 @@ KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
   {
     pw_t tmp = PASTE_PW;
 
-    tmp.pw_len = apply_rules (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
+    tmp.pw_len = apply_rules_utf16le (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
 
-    md4_ctx_t ctx;
+    sha256_ctx_t ctx;
 
-    md4_init (&ctx);
+    sha256_init (&ctx);
 
-    md4_update_utf16le (&ctx, tmp.i, tmp.pw_len);
+    sha256_update_swap (&ctx, tmp.i, tmp.pw_len);
 
-    md4_final (&ctx);
+    sha256_update_global (&ctx, esalt_bufs[DIGESTS_OFFSET_HOST].salt_buf, 128);
+
+    sha256_final (&ctx);
 
     const u32 r0 = ctx.h[DGST_R0];
     const u32 r1 = ctx.h[DGST_R1];

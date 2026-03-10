@@ -12,29 +12,20 @@
 
 static const u32   ATTACK_EXEC    = ATTACK_EXEC_INSIDE_KERNEL;
 static const u32   DGST_POS0      = 0;
-static const u32   DGST_POS1      = 3;
+static const u32   DGST_POS1      = 1;
 static const u32   DGST_POS2      = 2;
-static const u32   DGST_POS3      = 1;
+static const u32   DGST_POS3      = 3;
 static const u32   DGST_SIZE      = DGST_SIZE_4_4;
-static const u32   HASH_CATEGORY  = HASH_CATEGORY_OS;
-static const char *HASH_NAME      = "NTLM full utf16le";
-static const u64   KERN_TYPE      = 1002;
+static const u32   HASH_CATEGORY  = HASH_CATEGORY_NETWORK_PROTOCOL;
+static const char *HASH_NAME      = "Kerberos 5, etype 23, AS-REQ Pre-Auth Full UTF16LE";
+static const u64   KERN_TYPE      = 7502;
 static const u32   OPTI_TYPE      = OPTI_TYPE_ZERO_BYTE
-                                  | OPTI_TYPE_PRECOMPUTE_INIT
-                                  | OPTI_TYPE_MEET_IN_MIDDLE
-                                  | OPTI_TYPE_EARLY_SKIP
-                                  | OPTI_TYPE_NOT_ITERATED
-                                  | OPTI_TYPE_NOT_SALTED
-                                  | OPTI_TYPE_RAW_HASH;
+                                  | OPTI_TYPE_NOT_ITERATED;
 static const u64   OPTS_TYPE      = OPTS_TYPE_STOCK_MODULE
-                                  | OPTS_TYPE_PT_GENERATE_LE
-                                  | OPTS_TYPE_PT_ADD80
-                                  | OPTS_TYPE_PT_ADDBITS14
-                                  | OPTS_TYPE_PT_UTF16LE;
-static const u32   PWDUMP_COLUMN  = PWDUMP_COLUMN_NTLM_HASH;
-static const u32   SALT_TYPE      = SALT_TYPE_NONE;
-static const char *ST_PASS        = "\xac\x20\xac\x20\xac\x20\xac\x20";
-static const char *ST_HASH        = "09bfe9583b0d4b07add7249a7cccd83e";
+                                  | OPTS_TYPE_PT_GENERATE_LE;
+static const u32   SALT_TYPE      = SALT_TYPE_EMBEDDED;
+static const char *ST_PASS        = "\xac\x20\xac\x20";
+static const char *ST_HASH        = "$krb5pa$23$user$realm$salt$5cbb0c882a2b26956e81644edbdb746326f4f5f0e947144fb3095dffe4b4b03e854fc1d631323632303636373330383333353630";
 static const char *ICONV          = "UTF16LE";
 
 u32         module_attack_exec    (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ATTACK_EXEC;     }
@@ -48,80 +39,212 @@ const char *module_hash_name      (MAYBE_UNUSED const hashconfig_t *hashconfig, 
 u64         module_kern_type      (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return KERN_TYPE;       }
 u32         module_opti_type      (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return OPTI_TYPE;       }
 u64         module_opts_type      (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return OPTS_TYPE;       }
-u32         module_pwdump_column  (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return PWDUMP_COLUMN;   }
 u32         module_salt_type      (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return SALT_TYPE;       }
 const char *module_st_hash        (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ST_HASH;         }
 const char *module_st_pass        (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ST_PASS;         }
 const char *module_inconv         (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ICONV;           }
 
+typedef struct krb5pa
+{
+  u32 user[16];
+  u32 realm[16];
+  u32 salt[32];
+  u32 timestamp[16];
+  u32 checksum[4];
+
+} krb5pa_t;
+
+static const char *SIGNATURE_KRB5PA = "$krb5pa$23$";
+
+char *module_jit_build_options (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra, MAYBE_UNUSED const hashes_t *hashes, MAYBE_UNUSED const hc_device_param_t *device_param)
+{
+  char *jit_build_options = NULL;
+
+  u32 native_threads = 0;
+
+  if (device_param->opencl_device_type & CL_DEVICE_TYPE_CPU)
+  {
+    native_threads = 1;
+  }
+  else if (device_param->opencl_device_type & CL_DEVICE_TYPE_GPU)
+  {
+    #if defined (__APPLE__)
+
+    native_threads = 32;
+
+    #else
+
+    if (device_param->device_local_mem_size < 49152)
+    {
+      native_threads = MIN (device_param->kernel_preferred_wgs_multiple, 32); // We can't just set 32, because Intel GPU need 8
+    }
+    else
+    {
+      native_threads = device_param->kernel_preferred_wgs_multiple;
+    }
+
+    #endif
+  }
+
+  hc_asprintf (&jit_build_options, "-D FIXED_LOCAL_SIZE=%u -D _unroll", native_threads);
+
+  return jit_build_options;
+}
+
+u64 module_esalt_size (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra)
+{
+  const u64 esalt_size = (const u64) sizeof (krb5pa_t);
+
+  return esalt_size;
+}
+
 int module_hash_decode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED void *digest_buf, MAYBE_UNUSED salt_t *salt, MAYBE_UNUSED void *esalt_buf, MAYBE_UNUSED void *hook_salt_buf, MAYBE_UNUSED hashinfo_t *hash_info, const char *line_buf, MAYBE_UNUSED const int line_len)
 {
   u32 *digest = (u32 *) digest_buf;
+
+  krb5pa_t *krb5pa = (krb5pa_t *) esalt_buf;
 
   hc_token_t token;
 
   memset (&token, 0, sizeof (hc_token_t));
 
-  token.token_cnt  = 1;
+  token.token_cnt  = 6;
 
-  token.len[0]     = 32;
+  token.signatures_cnt    = 1;
+  token.signatures_buf[0] = SIGNATURE_KRB5PA;
+
+  token.len[0]     = 11;
   token.attr[0]    = TOKEN_ATTR_FIXED_LENGTH
+                   | TOKEN_ATTR_VERIFY_SIGNATURE;
+
+  token.sep[1]     = '$';
+  token.len_min[1] = 0;
+  token.len_max[1] = 64;
+  token.attr[1]    = TOKEN_ATTR_VERIFY_LENGTH;
+
+  token.sep[2]     = '$';
+  token.len_min[2] = 0;
+  token.len_max[2] = 64;
+  token.attr[2]    = TOKEN_ATTR_VERIFY_LENGTH;
+
+  token.sep[3]     = '$';
+  token.len_min[3] = 0;
+  token.len_max[3] = 128;
+  token.attr[3]    = TOKEN_ATTR_VERIFY_LENGTH;
+
+  token.len[4]     = 72;
+  token.attr[4]    = TOKEN_ATTR_FIXED_LENGTH
+                   | TOKEN_ATTR_VERIFY_HEX;
+
+  token.len[5]     = 32;
+  token.attr[5]    = TOKEN_ATTR_FIXED_LENGTH
                    | TOKEN_ATTR_VERIFY_HEX;
 
   const int rc_tokenizer = input_tokenizer ((const u8 *) line_buf, line_len, &token);
 
   if (rc_tokenizer != PARSER_OK) return (rc_tokenizer);
 
-  const u8 *hash_pos = token.buf[0];
+  const u8 *user_pos  = token.buf[1];
+  const u8 *realm_pos = token.buf[2];
+  const u8 *salt_pos  = token.buf[3];
 
-  digest[0] = hex_to_u32 (hash_pos +  0);
-  digest[1] = hex_to_u32 (hash_pos +  8);
-  digest[2] = hex_to_u32 (hash_pos + 16);
-  digest[3] = hex_to_u32 (hash_pos + 24);
+  const int user_len  = token.len[1];
+  const int realm_len = token.len[2];
+  const int salt_len  = token.len[3];
 
-  if (hashconfig->opti_type & OPTI_TYPE_OPTIMIZED_KERNEL)
+  /**
+   * copy data
+   */
+
+  memcpy (krb5pa->user,  user_pos,  user_len);
+  memcpy (krb5pa->realm, realm_pos, realm_len);
+  memcpy (krb5pa->salt,  salt_pos,  salt_len);
+
+  /**
+   * decode data
+   */
+
+  const u8 *timestamp_pos = token.buf[4];
+
+  u8 *timestamp_ptr = (u8 *) krb5pa->timestamp;
+
+  for (int i = 0; i < 72; i += 2)
   {
-    digest[0] -= MD4M_A;
-    digest[1] -= MD4M_B;
-    digest[2] -= MD4M_C;
-    digest[3] -= MD4M_D;
+    const u8 p0 = timestamp_pos[i + 0];
+    const u8 p1 = timestamp_pos[i + 1];
+
+    *timestamp_ptr++ = hex_convert (p1) << 0
+                     | hex_convert (p0) << 4;
   }
+
+  const u8 *checksum_pos = token.buf[5];
+
+  u8 *checksum_ptr = (u8 *) krb5pa->checksum;
+
+  for (int i = 0; i < 32; i += 2)
+  {
+    const u8 p0 = checksum_pos[i + 0];
+    const u8 p1 = checksum_pos[i + 1];
+
+    *checksum_ptr++ = hex_convert (p1) << 0
+                    | hex_convert (p0) << 4;
+  }
+
+  /**
+   * copy some data to generic buffers to make sorting happy
+   */
+
+  salt->salt_buf[0] = krb5pa->timestamp[0];
+  salt->salt_buf[1] = krb5pa->timestamp[1];
+  salt->salt_buf[2] = krb5pa->timestamp[2];
+  salt->salt_buf[3] = krb5pa->timestamp[3];
+  salt->salt_buf[4] = krb5pa->timestamp[4];
+  salt->salt_buf[5] = krb5pa->timestamp[5];
+  salt->salt_buf[6] = krb5pa->timestamp[6];
+  salt->salt_buf[7] = krb5pa->timestamp[7];
+  salt->salt_buf[8] = krb5pa->timestamp[8];
+
+  salt->salt_len = 36;
+
+  digest[0] = krb5pa->checksum[0];
+  digest[1] = krb5pa->checksum[1];
+  digest[2] = krb5pa->checksum[2];
+  digest[3] = krb5pa->checksum[3];
 
   return (PARSER_OK);
 }
 
 int module_hash_encode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const void *digest_buf, MAYBE_UNUSED const salt_t *salt, MAYBE_UNUSED const void *esalt_buf, MAYBE_UNUSED const void *hook_salt_buf, MAYBE_UNUSED const hashinfo_t *hash_info, char *line_buf, MAYBE_UNUSED const int line_size)
 {
-  const u32 *digest = (const u32 *) digest_buf;
+  const krb5pa_t *krb5pa = (const krb5pa_t *) esalt_buf;
 
-  // we can not change anything in the original buffer, otherwise destroying sorting
-  // therefore create some local buffer
+  const u8 *ptr_timestamp = (const u8 *) krb5pa->timestamp;
+  const u8 *ptr_checksum  = (const u8 *) krb5pa->checksum;
 
-  u32 tmp[4];
+  char data[128] = { 0 };
 
-  tmp[0] = digest[0];
-  tmp[1] = digest[1];
-  tmp[2] = digest[2];
-  tmp[3] = digest[3];
+  char *ptr_data = data;
 
-  if (hashconfig->opti_type & OPTI_TYPE_OPTIMIZED_KERNEL)
+  for (u32 i = 0; i < 36; i++, ptr_data += 2)
   {
-    tmp[0] += MD4M_A;
-    tmp[1] += MD4M_B;
-    tmp[2] += MD4M_C;
-    tmp[3] += MD4M_D;
+    snprintf (ptr_data, 3, "%02x", ptr_timestamp[i]);
   }
 
-  u8 *out_buf = (u8 *) line_buf;
+  for (u32 i = 0; i < 16; i++, ptr_data += 2)
+  {
+    snprintf (ptr_data, 3, "%02x", ptr_checksum[i]);
+  }
 
-  u32_to_hex (tmp[0], out_buf +  0);
-  u32_to_hex (tmp[1], out_buf +  8);
-  u32_to_hex (tmp[2], out_buf + 16);
-  u32_to_hex (tmp[3], out_buf + 24);
+  *ptr_data = 0;
 
-  const int out_len = 32;
+  const int line_len = snprintf (line_buf, line_size, "%s%s$%s$%s$%s",
+    SIGNATURE_KRB5PA,
+    (const char *) krb5pa->user,
+    (const char *) krb5pa->realm,
+    (const char *) krb5pa->salt,
+    data);
 
-  return out_len;
+  return line_len;
 }
 
 void module_init (module_ctx_t *module_ctx)
@@ -144,7 +267,7 @@ void module_init (module_ctx_t *module_ctx)
   module_ctx->module_dgst_pos3                = module_dgst_pos3;
   module_ctx->module_dgst_size                = module_dgst_size;
   module_ctx->module_dictstat_disable         = MODULE_DEFAULT;
-  module_ctx->module_esalt_size               = MODULE_DEFAULT;
+  module_ctx->module_esalt_size               = module_esalt_size;
   module_ctx->module_extra_buffer_size        = MODULE_DEFAULT;
   module_ctx->module_extra_tmp_size           = MODULE_DEFAULT;
   module_ctx->module_extra_tuningdb_block     = MODULE_DEFAULT;
@@ -173,7 +296,7 @@ void module_init (module_ctx_t *module_ctx)
   module_ctx->module_hook23                   = MODULE_DEFAULT;
   module_ctx->module_hook_salt_size           = MODULE_DEFAULT;
   module_ctx->module_hook_size                = MODULE_DEFAULT;
-  module_ctx->module_jit_build_options        = MODULE_DEFAULT;
+  module_ctx->module_jit_build_options        = module_jit_build_options;
   module_ctx->module_jit_cache_disable        = MODULE_DEFAULT;
   module_ctx->module_kernel_accel_max         = MODULE_DEFAULT;
   module_ctx->module_kernel_accel_min         = MODULE_DEFAULT;
@@ -190,7 +313,7 @@ void module_init (module_ctx_t *module_ctx)
   module_ctx->module_potfile_custom_check     = MODULE_DEFAULT;
   module_ctx->module_potfile_disable          = MODULE_DEFAULT;
   module_ctx->module_potfile_keep_all_hashes  = MODULE_DEFAULT;
-  module_ctx->module_pwdump_column            = module_pwdump_column;
+  module_ctx->module_pwdump_column            = MODULE_DEFAULT;
   module_ctx->module_pw_max                   = MODULE_DEFAULT;
   module_ctx->module_pw_min                   = MODULE_DEFAULT;
   module_ctx->module_salt_max                 = MODULE_DEFAULT;

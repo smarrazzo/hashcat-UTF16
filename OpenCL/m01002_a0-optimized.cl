@@ -161,7 +161,7 @@ KERNEL_FQ void m01002_s04 (KERN_ATTR_RULES ())
   u32 pw_buf0[4];
   u32 pw_buf1[4];
   u32 pw_buf2[4];
-  u32 pw_buf3[4];  
+  u32 pw_buf3[4];
 
   pw_buf0[0] = pws[gid].i[0];
   pw_buf0[1] = pws[gid].i[1];
@@ -206,7 +206,7 @@ KERNEL_FQ void m01002_s04 (KERN_ATTR_RULES ())
     u32x w3[4] = { 0 };
 
     const u32x out_len = apply_rules_vect_optimized_utf16le (pw_buf0, pw_buf1, pw_buf2, pw_buf3, pw_len, rules_buf, il_pos, w0, w1, w2, w3);
-    append_0x80_2x4_VV (w0, w1, out_len);
+    append_0x80_4x4_VV (w0, w1, w2, w3, out_len);
 
     w3[2] = out_len * 8;
     w3[3] = 0;

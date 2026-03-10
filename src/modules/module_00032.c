@@ -16,25 +16,24 @@ static const u32   DGST_POS1      = 3;
 static const u32   DGST_POS2      = 2;
 static const u32   DGST_POS3      = 1;
 static const u32   DGST_SIZE      = DGST_SIZE_4_4;
-static const u32   HASH_CATEGORY  = HASH_CATEGORY_OS;
-static const char *HASH_NAME      = "NTLM full utf16le";
-static const u64   KERN_TYPE      = 1002;
+static const u32   HASH_CATEGORY  = HASH_CATEGORY_RAW_HASH_SALTED;
+static const char *HASH_NAME      = "md5(utf16le($pass).$salt) Full UTF16LE";
+static const u64   KERN_TYPE      = 32;
 static const u32   OPTI_TYPE      = OPTI_TYPE_ZERO_BYTE
                                   | OPTI_TYPE_PRECOMPUTE_INIT
                                   | OPTI_TYPE_MEET_IN_MIDDLE
                                   | OPTI_TYPE_EARLY_SKIP
                                   | OPTI_TYPE_NOT_ITERATED
-                                  | OPTI_TYPE_NOT_SALTED
+                                  | OPTI_TYPE_APPENDED_SALT
                                   | OPTI_TYPE_RAW_HASH;
 static const u64   OPTS_TYPE      = OPTS_TYPE_STOCK_MODULE
                                   | OPTS_TYPE_PT_GENERATE_LE
-                                  | OPTS_TYPE_PT_ADD80
-                                  | OPTS_TYPE_PT_ADDBITS14
-                                  | OPTS_TYPE_PT_UTF16LE;
-static const u32   PWDUMP_COLUMN  = PWDUMP_COLUMN_NTLM_HASH;
-static const u32   SALT_TYPE      = SALT_TYPE_NONE;
-static const char *ST_PASS        = "\xac\x20\xac\x20\xac\x20\xac\x20";
-static const char *ST_HASH        = "09bfe9583b0d4b07add7249a7cccd83e";
+                                  | OPTS_TYPE_PT_UTF16LE
+                                  | OPTS_TYPE_ST_ADD80
+                                  | OPTS_TYPE_ST_ADDBITS14;
+static const u32   SALT_TYPE      = SALT_TYPE_GENERIC;
+static const char *ST_PASS        = "\xac\x20\xac\x20"; //€€
+static const char *ST_HASH        = "fd22dcc9d4941a0dde0e974a36f7434e:687430237020";
 static const char *ICONV          = "UTF16LE";
 
 u32         module_attack_exec    (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ATTACK_EXEC;     }
@@ -48,11 +47,11 @@ const char *module_hash_name      (MAYBE_UNUSED const hashconfig_t *hashconfig, 
 u64         module_kern_type      (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return KERN_TYPE;       }
 u32         module_opti_type      (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return OPTI_TYPE;       }
 u64         module_opts_type      (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return OPTS_TYPE;       }
-u32         module_pwdump_column  (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return PWDUMP_COLUMN;   }
 u32         module_salt_type      (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return SALT_TYPE;       }
 const char *module_st_hash        (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ST_HASH;         }
 const char *module_st_pass        (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ST_PASS;         }
 const char *module_inconv         (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ICONV;           }
+
 
 int module_hash_decode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED void *digest_buf, MAYBE_UNUSED salt_t *salt, MAYBE_UNUSED void *esalt_buf, MAYBE_UNUSED void *hook_salt_buf, MAYBE_UNUSED hashinfo_t *hash_info, const char *line_buf, MAYBE_UNUSED const int line_len)
 {
@@ -62,11 +61,24 @@ int module_hash_decode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSE
 
   memset (&token, 0, sizeof (hc_token_t));
 
-  token.token_cnt  = 1;
+  token.token_cnt  = 2;
 
+  token.sep[0]     = hashconfig->separator;
   token.len[0]     = 32;
   token.attr[0]    = TOKEN_ATTR_FIXED_LENGTH
                    | TOKEN_ATTR_VERIFY_HEX;
+
+  token.len_min[1] = SALT_MIN;
+  token.len_max[1] = SALT_MAX;
+  token.attr[1]    = TOKEN_ATTR_VERIFY_LENGTH;
+
+  if (hashconfig->opts_type & OPTS_TYPE_ST_HEX)
+  {
+    token.len_min[1] *= 2;
+    token.len_max[1] *= 2;
+
+    token.attr[1] |= TOKEN_ATTR_VERIFY_HEX;
+  }
 
   const int rc_tokenizer = input_tokenizer ((const u8 *) line_buf, line_len, &token);
 
@@ -81,11 +93,18 @@ int module_hash_decode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSE
 
   if (hashconfig->opti_type & OPTI_TYPE_OPTIMIZED_KERNEL)
   {
-    digest[0] -= MD4M_A;
-    digest[1] -= MD4M_B;
-    digest[2] -= MD4M_C;
-    digest[3] -= MD4M_D;
+    digest[0] -= MD5M_A;
+    digest[1] -= MD5M_B;
+    digest[2] -= MD5M_C;
+    digest[3] -= MD5M_D;
   }
+
+  const u8 *salt_pos = token.buf[1];
+  const int salt_len = token.len[1];
+
+  const bool parse_rc = generic_salt_decode (hashconfig, salt_pos, salt_len, (u8 *) salt->salt_buf, (int *) &salt->salt_len);
+
+  if (parse_rc == false) return (PARSER_SALT_LENGTH);
 
   return (PARSER_OK);
 }
@@ -93,9 +112,6 @@ int module_hash_decode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSE
 int module_hash_encode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const void *digest_buf, MAYBE_UNUSED const salt_t *salt, MAYBE_UNUSED const void *esalt_buf, MAYBE_UNUSED const void *hook_salt_buf, MAYBE_UNUSED const hashinfo_t *hash_info, char *line_buf, MAYBE_UNUSED const int line_size)
 {
   const u32 *digest = (const u32 *) digest_buf;
-
-  // we can not change anything in the original buffer, otherwise destroying sorting
-  // therefore create some local buffer
 
   u32 tmp[4];
 
@@ -106,20 +122,26 @@ int module_hash_encode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSE
 
   if (hashconfig->opti_type & OPTI_TYPE_OPTIMIZED_KERNEL)
   {
-    tmp[0] += MD4M_A;
-    tmp[1] += MD4M_B;
-    tmp[2] += MD4M_C;
-    tmp[3] += MD4M_D;
+    tmp[0] += MD5M_A;
+    tmp[1] += MD5M_B;
+    tmp[2] += MD5M_C;
+    tmp[3] += MD5M_D;
   }
 
   u8 *out_buf = (u8 *) line_buf;
 
-  u32_to_hex (tmp[0], out_buf +  0);
-  u32_to_hex (tmp[1], out_buf +  8);
-  u32_to_hex (tmp[2], out_buf + 16);
-  u32_to_hex (tmp[3], out_buf + 24);
+  int out_len = 0;
 
-  const int out_len = 32;
+  u32_to_hex (tmp[0], out_buf + out_len); out_len += 8;
+  u32_to_hex (tmp[1], out_buf + out_len); out_len += 8;
+  u32_to_hex (tmp[2], out_buf + out_len); out_len += 8;
+  u32_to_hex (tmp[3], out_buf + out_len); out_len += 8;
+
+  out_buf[out_len] = hashconfig->separator;
+
+  out_len += 1;
+
+  out_len += generic_salt_encode (hashconfig, (const u8 *) salt->salt_buf, (const int) salt->salt_len, out_buf + out_len);
 
   return out_len;
 }
@@ -190,7 +212,7 @@ void module_init (module_ctx_t *module_ctx)
   module_ctx->module_potfile_custom_check     = MODULE_DEFAULT;
   module_ctx->module_potfile_disable          = MODULE_DEFAULT;
   module_ctx->module_potfile_keep_all_hashes  = MODULE_DEFAULT;
-  module_ctx->module_pwdump_column            = module_pwdump_column;
+  module_ctx->module_pwdump_column            = MODULE_DEFAULT;
   module_ctx->module_pw_max                   = MODULE_DEFAULT;
   module_ctx->module_pw_min                   = MODULE_DEFAULT;
   module_ctx->module_salt_max                 = MODULE_DEFAULT;
@@ -202,5 +224,6 @@ void module_init (module_ctx_t *module_ctx)
   module_ctx->module_tmp_size                 = MODULE_DEFAULT;
   module_ctx->module_unstable_warning         = MODULE_DEFAULT;
   module_ctx->module_warmup_disable           = MODULE_DEFAULT;
+  module_ctx->module_iconv                    = MODULE_DEFAULT;
   module_ctx->module_iconv                    = module_inconv;
 }

@@ -10,13 +10,11 @@
 #include M2S(INCLUDE_PATH/inc_types.h)
 #include M2S(INCLUDE_PATH/inc_platform.cl)
 #include M2S(INCLUDE_PATH/inc_common.cl)
-#include M2S(INCLUDE_PATH/inc_rp_utf16le.h)
-#include M2S(INCLUDE_PATH/inc_rp_utf16le.cl)
 #include M2S(INCLUDE_PATH/inc_scalar.cl)
-#include M2S(INCLUDE_PATH/inc_hash_md4.cl)
+#include M2S(INCLUDE_PATH/inc_hash_sha256.cl)
 #endif
 
-KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
+KERNEL_FQ void m01442_mxx (KERN_ATTR_BASIC ())
 {
   /**
    * modifier
@@ -31,7 +29,13 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
    * base
    */
 
-  COPY_PW (pws[gid]);
+  sha256_ctx_t ctx0;
+
+  sha256_init (&ctx0);
+
+  sha256_update_global_swap (&ctx0, salt_bufs[SALT_POS_HOST].salt_buf, salt_bufs[SALT_POS_HOST].salt_len);
+
+  sha256_update_global_swap (&ctx0, pws[gid].i, pws[gid].pw_len);
 
   /**
    * loop
@@ -39,17 +43,11 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
 
   for (u32 il_pos = 0; il_pos < IL_CNT; il_pos++)
   {
-    pw_t tmp = PASTE_PW;
+    sha256_ctx_t ctx = ctx0;
 
-    tmp.pw_len = apply_rules_utf16le (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
+    sha256_update_global_swap (&ctx, combs_buf[il_pos].i, combs_buf[il_pos].pw_len);
 
-    md4_ctx_t ctx;
-
-    md4_init (&ctx);
-
-    md4_update (&ctx, tmp.i, tmp.pw_len);
-
-    md4_final (&ctx);
+    sha256_final (&ctx);
 
     const u32 r0 = ctx.h[DGST_R0];
     const u32 r1 = ctx.h[DGST_R1];
@@ -60,7 +58,7 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
   }
 }
 
-KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
+KERNEL_FQ void m01442_sxx (KERN_ATTR_BASIC ())
 {
   /**
    * modifier
@@ -87,7 +85,13 @@ KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
    * base
    */
 
-  COPY_PW (pws[gid]);
+  sha256_ctx_t ctx0;
+
+  sha256_init (&ctx0);
+
+  sha256_update_global_swap (&ctx0, salt_bufs[SALT_POS_HOST].salt_buf, salt_bufs[SALT_POS_HOST].salt_len);
+
+  sha256_update_global_swap (&ctx0, pws[gid].i, pws[gid].pw_len);
 
   /**
    * loop
@@ -95,17 +99,11 @@ KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
 
   for (u32 il_pos = 0; il_pos < IL_CNT; il_pos++)
   {
-    pw_t tmp = PASTE_PW;
+    sha256_ctx_t ctx = ctx0;
 
-    tmp.pw_len = apply_rules (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
+    sha256_update_global_swap (&ctx, combs_buf[il_pos].i, combs_buf[il_pos].pw_len);
 
-    md4_ctx_t ctx;
-
-    md4_init (&ctx);
-
-    md4_update_utf16le (&ctx, tmp.i, tmp.pw_len);
-
-    md4_final (&ctx);
+    sha256_final (&ctx);
 
     const u32 r0 = ctx.h[DGST_R0];
     const u32 r1 = ctx.h[DGST_R1];

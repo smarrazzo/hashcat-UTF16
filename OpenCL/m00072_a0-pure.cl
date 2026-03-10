@@ -13,10 +13,10 @@
 #include M2S(INCLUDE_PATH/inc_rp_utf16le.h)
 #include M2S(INCLUDE_PATH/inc_rp_utf16le.cl)
 #include M2S(INCLUDE_PATH/inc_scalar.cl)
-#include M2S(INCLUDE_PATH/inc_hash_md4.cl)
+#include M2S(INCLUDE_PATH/inc_hash_md5.cl)
 #endif
 
-KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
+KERNEL_FQ void m00072_mxx (KERN_ATTR_RULES ())
 {
   /**
    * modifier
@@ -43,13 +43,14 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
 
     tmp.pw_len = apply_rules_utf16le (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
 
-    md4_ctx_t ctx;
+    md5_ctx_t ctx;
 
-    md4_init (&ctx);
+    md5_init (&ctx);
 
-    md4_update (&ctx, tmp.i, tmp.pw_len);
+    //md5_update_utf16le (&ctx, tmp.i, tmp.pw_len);
+    md5_update (&ctx, tmp.i, tmp.pw_len);
 
-    md4_final (&ctx);
+    md5_final (&ctx);
 
     const u32 r0 = ctx.h[DGST_R0];
     const u32 r1 = ctx.h[DGST_R1];
@@ -60,7 +61,7 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
   }
 }
 
-KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
+KERNEL_FQ void m00072_sxx (KERN_ATTR_RULES ())
 {
   /**
    * modifier
@@ -97,15 +98,16 @@ KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
   {
     pw_t tmp = PASTE_PW;
 
-    tmp.pw_len = apply_rules (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
+    tmp.pw_len = apply_rules_utf16le (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
 
-    md4_ctx_t ctx;
+    md5_ctx_t ctx;
 
-    md4_init (&ctx);
+    md5_init (&ctx);
 
-    md4_update_utf16le (&ctx, tmp.i, tmp.pw_len);
+    //md5_update_utf16le (&ctx, tmp.i, tmp.pw_len);
+    md5_update (&ctx, tmp.i, tmp.pw_len);
 
-    md4_final (&ctx);
+    md5_final (&ctx);
 
     const u32 r0 = ctx.h[DGST_R0];
     const u32 r1 = ctx.h[DGST_R1];

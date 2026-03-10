@@ -10,13 +10,11 @@
 #include M2S(INCLUDE_PATH/inc_types.h)
 #include M2S(INCLUDE_PATH/inc_platform.cl)
 #include M2S(INCLUDE_PATH/inc_common.cl)
-#include M2S(INCLUDE_PATH/inc_rp_utf16le.h)
-#include M2S(INCLUDE_PATH/inc_rp_utf16le.cl)
 #include M2S(INCLUDE_PATH/inc_scalar.cl)
 #include M2S(INCLUDE_PATH/inc_hash_md4.cl)
 #endif
 
-KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
+KERNEL_FQ void m01102_mxx (KERN_ATTR_BASIC ())
 {
   /**
    * modifier
@@ -31,7 +29,20 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
    * base
    */
 
-  COPY_PW (pws[gid]);
+  const u32 salt_len = salt_bufs[SALT_POS_HOST].salt_len;
+
+  u32 s[64] = { 0 };
+
+  for (u32 i = 0, idx = 0; i < salt_len; i += 4, idx += 1)
+  {
+    s[idx] = salt_bufs[SALT_POS_HOST].salt_buf[idx];
+  }
+
+  md4_ctx_t ctx0;
+
+  md4_init (&ctx0);
+
+  md4_update_global (&ctx0, pws[gid].i, pws[gid].pw_len);
 
   /**
    * loop
@@ -39,15 +50,24 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
 
   for (u32 il_pos = 0; il_pos < IL_CNT; il_pos++)
   {
-    pw_t tmp = PASTE_PW;
+    md4_ctx_t ctx1 = ctx0;
 
-    tmp.pw_len = apply_rules_utf16le (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
+    md4_update_global (&ctx1, combs_buf[il_pos].i, combs_buf[il_pos].pw_len);
+
+    md4_final (&ctx1);
 
     md4_ctx_t ctx;
 
     md4_init (&ctx);
 
-    md4_update (&ctx, tmp.i, tmp.pw_len);
+    ctx.w0[0] = ctx1.h[0];
+    ctx.w0[1] = ctx1.h[1];
+    ctx.w0[2] = ctx1.h[2];
+    ctx.w0[3] = ctx1.h[3];
+
+    ctx.len = 16;
+
+    md4_update (&ctx, s, salt_len);
 
     md4_final (&ctx);
 
@@ -60,7 +80,7 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
   }
 }
 
-KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
+KERNEL_FQ void m01102_sxx (KERN_ATTR_BASIC ())
 {
   /**
    * modifier
@@ -87,7 +107,20 @@ KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
    * base
    */
 
-  COPY_PW (pws[gid]);
+  const u32 salt_len = salt_bufs[SALT_POS_HOST].salt_len;
+
+  u32 s[64] = { 0 };
+
+  for (u32 i = 0, idx = 0; i < salt_len; i += 4, idx += 1)
+  {
+    s[idx] = salt_bufs[SALT_POS_HOST].salt_buf[idx];
+  }
+
+  md4_ctx_t ctx0;
+
+  md4_init (&ctx0);
+
+  md4_update_global (&ctx0, pws[gid].i, pws[gid].pw_len);
 
   /**
    * loop
@@ -95,15 +128,24 @@ KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
 
   for (u32 il_pos = 0; il_pos < IL_CNT; il_pos++)
   {
-    pw_t tmp = PASTE_PW;
+    md4_ctx_t ctx1 = ctx0;
 
-    tmp.pw_len = apply_rules (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
+    md4_update_global (&ctx1, combs_buf[il_pos].i, combs_buf[il_pos].pw_len);
+
+    md4_final (&ctx1);
 
     md4_ctx_t ctx;
 
     md4_init (&ctx);
 
-    md4_update_utf16le (&ctx, tmp.i, tmp.pw_len);
+    ctx.w0[0] = ctx1.h[0];
+    ctx.w0[1] = ctx1.h[1];
+    ctx.w0[2] = ctx1.h[2];
+    ctx.w0[3] = ctx1.h[3];
+
+    ctx.len = 16;
+
+    md4_update (&ctx, s, salt_len);
 
     md4_final (&ctx);
 

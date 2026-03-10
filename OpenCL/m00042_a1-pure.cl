@@ -10,13 +10,11 @@
 #include M2S(INCLUDE_PATH/inc_types.h)
 #include M2S(INCLUDE_PATH/inc_platform.cl)
 #include M2S(INCLUDE_PATH/inc_common.cl)
-#include M2S(INCLUDE_PATH/inc_rp_utf16le.h)
-#include M2S(INCLUDE_PATH/inc_rp_utf16le.cl)
 #include M2S(INCLUDE_PATH/inc_scalar.cl)
-#include M2S(INCLUDE_PATH/inc_hash_md4.cl)
+#include M2S(INCLUDE_PATH/inc_hash_md5.cl)
 #endif
 
-KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
+KERNEL_FQ void m00042_mxx (KERN_ATTR_BASIC ())
 {
   /**
    * modifier
@@ -31,25 +29,26 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
    * base
    */
 
-  COPY_PW (pws[gid]);
+  md5_ctx_t ctx0;
 
+  md5_init (&ctx0);
+
+  md5_update_global (&ctx0, salt_bufs[SALT_POS_HOST].salt_buf, salt_bufs[SALT_POS_HOST].salt_len);
+
+  //md5_update_global_utf16le (&ctx0, pws[gid].i, pws[gid].pw_len);
+  md5_update_global (&ctx0, pws[gid].i, pws[gid].pw_len);
   /**
    * loop
    */
 
   for (u32 il_pos = 0; il_pos < IL_CNT; il_pos++)
   {
-    pw_t tmp = PASTE_PW;
+    md5_ctx_t ctx = ctx0;
 
-    tmp.pw_len = apply_rules_utf16le (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
+    //md5_update_global_utf16le (&ctx, combs_buf[il_pos].i, combs_buf[il_pos].pw_len);
+    md5_update_global (&ctx, combs_buf[il_pos].i, combs_buf[il_pos].pw_len);
 
-    md4_ctx_t ctx;
-
-    md4_init (&ctx);
-
-    md4_update (&ctx, tmp.i, tmp.pw_len);
-
-    md4_final (&ctx);
+    md5_final (&ctx);
 
     const u32 r0 = ctx.h[DGST_R0];
     const u32 r1 = ctx.h[DGST_R1];
@@ -60,7 +59,7 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
   }
 }
 
-KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
+KERNEL_FQ void m00042_sxx (KERN_ATTR_BASIC ())
 {
   /**
    * modifier
@@ -87,7 +86,15 @@ KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
    * base
    */
 
-  COPY_PW (pws[gid]);
+  md5_ctx_t ctx0;
+
+  md5_init (&ctx0);
+
+  md5_update_global (&ctx0, salt_bufs[SALT_POS_HOST].salt_buf, salt_bufs[SALT_POS_HOST].salt_len);
+
+  //md5_update_global_utf16le (&ctx0, pws[gid].i, pws[gid].pw_len);
+  md5_update_global (&ctx0, pws[gid].i, pws[gid].pw_len);
+
 
   /**
    * loop
@@ -95,17 +102,12 @@ KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
 
   for (u32 il_pos = 0; il_pos < IL_CNT; il_pos++)
   {
-    pw_t tmp = PASTE_PW;
+    md5_ctx_t ctx = ctx0;
 
-    tmp.pw_len = apply_rules (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
+    //md5_update_global_utf16le (&ctx, combs_buf[il_pos].i, combs_buf[il_pos].pw_len);
+    md5_update_global (&ctx, combs_buf[il_pos].i, combs_buf[il_pos].pw_len);
 
-    md4_ctx_t ctx;
-
-    md4_init (&ctx);
-
-    md4_update_utf16le (&ctx, tmp.i, tmp.pw_len);
-
-    md4_final (&ctx);
+    md5_final (&ctx);
 
     const u32 r0 = ctx.h[DGST_R0];
     const u32 r1 = ctx.h[DGST_R1];

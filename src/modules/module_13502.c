@@ -9,32 +9,29 @@
 #include "bitops.h"
 #include "convert.h"
 #include "shared.h"
+#include "emu_inc_hash_sha1.h"
 
 static const u32   ATTACK_EXEC    = ATTACK_EXEC_INSIDE_KERNEL;
-static const u32   DGST_POS0      = 0;
-static const u32   DGST_POS1      = 3;
+static const u32   DGST_POS0      = 3;
+static const u32   DGST_POS1      = 4;
 static const u32   DGST_POS2      = 2;
 static const u32   DGST_POS3      = 1;
-static const u32   DGST_SIZE      = DGST_SIZE_4_4;
-static const u32   HASH_CATEGORY  = HASH_CATEGORY_OS;
-static const char *HASH_NAME      = "NTLM full utf16le";
-static const u64   KERN_TYPE      = 1002;
+static const u32   DGST_SIZE      = DGST_SIZE_4_5;
+static const u32   HASH_CATEGORY  = HASH_CATEGORY_EAS;
+static const char *HASH_NAME      = "PeopleSoft PS_TOKEN Full UTF16LE";
+static const u64   KERN_TYPE      = 13502;
 static const u32   OPTI_TYPE      = OPTI_TYPE_ZERO_BYTE
                                   | OPTI_TYPE_PRECOMPUTE_INIT
-                                  | OPTI_TYPE_MEET_IN_MIDDLE
-                                  | OPTI_TYPE_EARLY_SKIP
                                   | OPTI_TYPE_NOT_ITERATED
-                                  | OPTI_TYPE_NOT_SALTED
+                                  | OPTI_TYPE_PREPENDED_SALT
                                   | OPTI_TYPE_RAW_HASH;
 static const u64   OPTS_TYPE      = OPTS_TYPE_STOCK_MODULE
-                                  | OPTS_TYPE_PT_GENERATE_LE
-                                  | OPTS_TYPE_PT_ADD80
-                                  | OPTS_TYPE_PT_ADDBITS14
-                                  | OPTS_TYPE_PT_UTF16LE;
-static const u32   PWDUMP_COLUMN  = PWDUMP_COLUMN_NTLM_HASH;
-static const u32   SALT_TYPE      = SALT_TYPE_NONE;
-static const char *ST_PASS        = "\xac\x20\xac\x20\xac\x20\xac\x20";
-static const char *ST_HASH        = "09bfe9583b0d4b07add7249a7cccd83e";
+                                  | OPTS_TYPE_PT_GENERATE_BE
+                                  | OPTS_TYPE_PT_UTF16LE
+                                  | OPTS_TYPE_PT_ADD80;
+static const u32   SALT_TYPE      = SALT_TYPE_EMBEDDED;
+static const char *ST_PASS        = "\xac\x20\xac\x20";
+static const char *ST_HASH        = "24eea51b53d02b4c5ff99bcb05a6847fdb2d9308:4f10a0de76e242040c28e9d3dd15c903343489c79765f9118c098c266b9ff505c95bd75bbe406ff3404849eea73930ad17937c0ba6fc3e7bb6d37362941318938b8af96d1292a310b3fd29a67e411ecb10d30247c99183a16951b3859054d4eba9dcd50709c7b21dee836d7ed195cc6b33317aeb557cc56392dc551faa8d5a0fb42212";
 static const char *ICONV          = "UTF16LE";
 
 u32         module_attack_exec    (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ATTACK_EXEC;     }
@@ -48,24 +45,48 @@ const char *module_hash_name      (MAYBE_UNUSED const hashconfig_t *hashconfig, 
 u64         module_kern_type      (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return KERN_TYPE;       }
 u32         module_opti_type      (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return OPTI_TYPE;       }
 u64         module_opts_type      (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return OPTS_TYPE;       }
-u32         module_pwdump_column  (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return PWDUMP_COLUMN;   }
 u32         module_salt_type      (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return SALT_TYPE;       }
 const char *module_st_hash        (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ST_HASH;         }
 const char *module_st_pass        (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ST_PASS;         }
 const char *module_inconv         (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ICONV;           }
 
+typedef struct pstoken
+{
+  u32 salt_buf[128];
+  u32 salt_len;
+
+  u32 pc_digest[5];
+  u32 pc_offset;
+
+} pstoken_t;
+
+u64 module_esalt_size (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra)
+{
+  const u64 esalt_size = (const u64) sizeof (pstoken_t);
+
+  return esalt_size;
+}
+
 int module_hash_decode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED void *digest_buf, MAYBE_UNUSED salt_t *salt, MAYBE_UNUSED void *esalt_buf, MAYBE_UNUSED void *hook_salt_buf, MAYBE_UNUSED hashinfo_t *hash_info, const char *line_buf, MAYBE_UNUSED const int line_len)
 {
   u32 *digest = (u32 *) digest_buf;
+
+  pstoken_t *pstoken = (pstoken_t *) esalt_buf;
 
   hc_token_t token;
 
   memset (&token, 0, sizeof (hc_token_t));
 
-  token.token_cnt  = 1;
+  token.token_cnt  = 2;
 
-  token.len[0]     = 32;
+  token.sep[0]     = hashconfig->separator;
+  token.len[0]     = 40;
   token.attr[0]    = TOKEN_ATTR_FIXED_LENGTH
+                   | TOKEN_ATTR_VERIFY_HEX;
+
+  token.len_min[1] = 32;
+  token.len_max[1] = 1024;
+  token.attr[1]    = TOKEN_ATTR_VERIFY_LENGTH
                    | TOKEN_ATTR_VERIFY_HEX;
 
   const int rc_tokenizer = input_tokenizer ((const u8 *) line_buf, line_len, &token);
@@ -78,13 +99,74 @@ int module_hash_decode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSE
   digest[1] = hex_to_u32 (hash_pos +  8);
   digest[2] = hex_to_u32 (hash_pos + 16);
   digest[3] = hex_to_u32 (hash_pos + 24);
+  digest[4] = hex_to_u32 (hash_pos + 32);
 
-  if (hashconfig->opti_type & OPTI_TYPE_OPTIMIZED_KERNEL)
+  digest[0] = byte_swap_32 (digest[0]);
+  digest[1] = byte_swap_32 (digest[1]);
+  digest[2] = byte_swap_32 (digest[2]);
+  digest[3] = byte_swap_32 (digest[3]);
+  digest[4] = byte_swap_32 (digest[4]);
+
+  const u8 *salt_pos = token.buf[1];
+  const int salt_len = token.len[1];
+
+  u8 *pstoken_ptr = (u8 *) pstoken->salt_buf;
+
+  for (int i = 0, j = 0; i < salt_len; i += 2, j += 1)
   {
-    digest[0] -= MD4M_A;
-    digest[1] -= MD4M_B;
-    digest[2] -= MD4M_C;
-    digest[3] -= MD4M_D;
+    pstoken_ptr[j] = hex_to_u8 (salt_pos + i);
+  }
+
+  pstoken->salt_len = salt_len / 2;
+
+  /* some fake salt for the sorting mechanisms */
+
+  salt->salt_buf[0] = pstoken->salt_buf[0];
+  salt->salt_buf[1] = pstoken->salt_buf[1];
+  salt->salt_buf[2] = pstoken->salt_buf[2];
+  salt->salt_buf[3] = pstoken->salt_buf[3];
+  salt->salt_buf[4] = pstoken->salt_buf[4];
+  salt->salt_buf[5] = pstoken->salt_buf[5];
+  salt->salt_buf[6] = pstoken->salt_buf[6];
+  salt->salt_buf[7] = pstoken->salt_buf[7];
+
+  salt->salt_len = 32;
+
+  /* we need to check if we can precompute some of the data --
+     this is possible since the scheme is badly designed */
+
+  pstoken->pc_digest[0] = SHA1M_A;
+  pstoken->pc_digest[1] = SHA1M_B;
+  pstoken->pc_digest[2] = SHA1M_C;
+  pstoken->pc_digest[3] = SHA1M_D;
+  pstoken->pc_digest[4] = SHA1M_E;
+
+  pstoken->pc_offset = 0;
+
+  for (int i = 0; i < (int) pstoken->salt_len - 63; i += 64)
+  {
+    u32 w[16];
+
+    w[ 0] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset +  0]);
+    w[ 1] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset +  1]);
+    w[ 2] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset +  2]);
+    w[ 3] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset +  3]);
+    w[ 4] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset +  4]);
+    w[ 5] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset +  5]);
+    w[ 6] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset +  6]);
+    w[ 7] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset +  7]);
+    w[ 8] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset +  8]);
+    w[ 9] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset +  9]);
+    w[10] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset + 10]);
+    w[11] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset + 11]);
+    w[12] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset + 12]);
+    w[13] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset + 13]);
+    w[14] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset + 14]);
+    w[15] = byte_swap_32 (pstoken->salt_buf[pstoken->pc_offset + 15]);
+
+    sha1_transform (w + 0, w + 4, w + 8, w + 12, pstoken->pc_digest);
+
+    pstoken->pc_offset += 16;
   }
 
   return (PARSER_OK);
@@ -94,34 +176,29 @@ int module_hash_encode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSE
 {
   const u32 *digest = (const u32 *) digest_buf;
 
-  // we can not change anything in the original buffer, otherwise destroying sorting
-  // therefore create some local buffer
+  const pstoken_t *pstoken = (const pstoken_t *) esalt_buf;
 
-  u32 tmp[4];
+  const u32 salt_len = (pstoken->salt_len > 512) ? 512 : pstoken->salt_len;
 
-  tmp[0] = digest[0];
-  tmp[1] = digest[1];
-  tmp[2] = digest[2];
-  tmp[3] = digest[3];
+  char pstoken_tmp[1024 + 1] = { 0 };
 
-  if (hashconfig->opti_type & OPTI_TYPE_OPTIMIZED_KERNEL)
+  for (u32 i = 0, j = 0; i < salt_len; i += 1, j += 2)
   {
-    tmp[0] += MD4M_A;
-    tmp[1] += MD4M_B;
-    tmp[2] += MD4M_C;
-    tmp[3] += MD4M_D;
+    const u8 *ptr = (const u8 *) pstoken->salt_buf;
+
+    snprintf (pstoken_tmp + j, 3, "%02x", ptr[i]);
   }
 
-  u8 *out_buf = (u8 *) line_buf;
+  const int line_len = snprintf (line_buf, line_size, "%08x%08x%08x%08x%08x%c%s",
+    digest[0],
+    digest[1],
+    digest[2],
+    digest[3],
+    digest[4],
+    hashconfig->separator,
+    pstoken_tmp);
 
-  u32_to_hex (tmp[0], out_buf +  0);
-  u32_to_hex (tmp[1], out_buf +  8);
-  u32_to_hex (tmp[2], out_buf + 16);
-  u32_to_hex (tmp[3], out_buf + 24);
-
-  const int out_len = 32;
-
-  return out_len;
+  return line_len;
 }
 
 void module_init (module_ctx_t *module_ctx)
@@ -144,7 +221,7 @@ void module_init (module_ctx_t *module_ctx)
   module_ctx->module_dgst_pos3                = module_dgst_pos3;
   module_ctx->module_dgst_size                = module_dgst_size;
   module_ctx->module_dictstat_disable         = MODULE_DEFAULT;
-  module_ctx->module_esalt_size               = MODULE_DEFAULT;
+  module_ctx->module_esalt_size               = module_esalt_size;
   module_ctx->module_extra_buffer_size        = MODULE_DEFAULT;
   module_ctx->module_extra_tmp_size           = MODULE_DEFAULT;
   module_ctx->module_extra_tuningdb_block     = MODULE_DEFAULT;
@@ -190,7 +267,7 @@ void module_init (module_ctx_t *module_ctx)
   module_ctx->module_potfile_custom_check     = MODULE_DEFAULT;
   module_ctx->module_potfile_disable          = MODULE_DEFAULT;
   module_ctx->module_potfile_keep_all_hashes  = MODULE_DEFAULT;
-  module_ctx->module_pwdump_column            = module_pwdump_column;
+  module_ctx->module_pwdump_column            = MODULE_DEFAULT;
   module_ctx->module_pw_max                   = MODULE_DEFAULT;
   module_ctx->module_pw_min                   = MODULE_DEFAULT;
   module_ctx->module_salt_max                 = MODULE_DEFAULT;

@@ -16,7 +16,7 @@
 #include M2S(INCLUDE_PATH/inc_hash_md4.cl)
 #endif
 
-KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
+KERNEL_FQ void m01102_mxx (KERN_ATTR_RULES ())
 {
   /**
    * modifier
@@ -33,6 +33,15 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
 
   COPY_PW (pws[gid]);
 
+  const u32 salt_len = salt_bufs[SALT_POS_HOST].salt_len;
+
+  u32 s[64] = { 0 };
+
+  for (u32 i = 0, idx = 0; i < salt_len; i += 4, idx += 1)
+  {
+    s[idx] = salt_bufs[SALT_POS_HOST].salt_buf[idx];
+  }
+
   /**
    * loop
    */
@@ -43,11 +52,26 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
 
     tmp.pw_len = apply_rules_utf16le (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
 
+    md4_ctx_t ctx0;
+
+    md4_init (&ctx0);
+
+    md4_update_utf16le (&ctx0, tmp.i, tmp.pw_len);
+
+    md4_final (&ctx0);
+
     md4_ctx_t ctx;
 
     md4_init (&ctx);
 
-    md4_update (&ctx, tmp.i, tmp.pw_len);
+    ctx.w0[0] = ctx0.h[0];
+    ctx.w0[1] = ctx0.h[1];
+    ctx.w0[2] = ctx0.h[2];
+    ctx.w0[3] = ctx0.h[3];
+
+    ctx.len = 16;
+
+    md4_update_utf16le (&ctx, s, salt_len);
 
     md4_final (&ctx);
 
@@ -60,7 +84,7 @@ KERNEL_FQ void m01002_mxx (KERN_ATTR_RULES ())
   }
 }
 
-KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
+KERNEL_FQ void m01102_sxx (KERN_ATTR_RULES ())
 {
   /**
    * modifier
@@ -89,6 +113,15 @@ KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
 
   COPY_PW (pws[gid]);
 
+  const u32 salt_len = salt_bufs[SALT_POS_HOST].salt_len;
+
+  u32 s[64] = { 0 };
+
+  for (u32 i = 0, idx = 0; i < salt_len; i += 4, idx += 1)
+  {
+    s[idx] = salt_bufs[SALT_POS_HOST].salt_buf[idx];
+  }
+
   /**
    * loop
    */
@@ -97,13 +130,28 @@ KERNEL_FQ void m01002_sxx (KERN_ATTR_RULES ())
   {
     pw_t tmp = PASTE_PW;
 
-    tmp.pw_len = apply_rules (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
+    tmp.pw_len = apply_rules_utf16le (rules_buf[il_pos].cmds, tmp.i, tmp.pw_len);
+
+    md4_ctx_t ctx0;
+
+    md4_init (&ctx0);
+
+    md4_update_utf16le (&ctx0, tmp.i, tmp.pw_len);
+
+    md4_final (&ctx0);
 
     md4_ctx_t ctx;
 
     md4_init (&ctx);
 
-    md4_update_utf16le (&ctx, tmp.i, tmp.pw_len);
+    ctx.w0[0] = ctx0.h[0];
+    ctx.w0[1] = ctx0.h[1];
+    ctx.w0[2] = ctx0.h[2];
+    ctx.w0[3] = ctx0.h[3];
+
+    ctx.len = 16;
+
+    md4_update_utf16le (&ctx, s, salt_len);
 
     md4_final (&ctx);
 
