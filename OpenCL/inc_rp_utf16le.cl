@@ -8,6 +8,7 @@
 #include "inc_platform.h"
 #include "inc_common.h"
 #include "inc_rp_utf16le.h"
+#include "inc_rp_common.cl"
 
 #ifndef MAYBE_UNUSED
 #define MAYBE_UNUSED
@@ -27,17 +28,6 @@
 #else
 #define PASTE_PW pw;
 #endif
-
-DECLSPEC u32 generate_cmask_utf16le (const u32 value) // OK a tester  
-{
-  const u32 rmask =  ((value & 0x00400040u) >> 1u)
-                  & ~((value & 0x00800080u) >> 2u);
-
-  const u32 hmask = (value & 0x001f001fu) + 0x00050005u;
-  const u32 lmask = (value & 0x001f001fu) + 0x001f001fu;
-
-  return rmask & ~hmask & lmask;
-}
 
 DECLSPEC void append_four_byte_utf16le (PRIVATE_AS const u32 *buf_src, const int off_src, PRIVATE_AS u32 *buf_dst, const int off_dst)  // OK a tester Doute sur le masque 
 {
@@ -253,6 +243,18 @@ DECLSPEC int mangle_trest_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const
   return (len);
 }
 
+DECLSPEC int mangle_shift_case_utf16le  (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len) // TODO
+{
+  for (int i = 0, idx = 0; i < len; i += 4, idx += 1)
+  {
+    const u32 t = buf[idx];
+
+    buf[idx] = t ^ generate_cshift_mask (t);
+  }
+
+  return len;
+}
+
 DECLSPEC int mangle_toggle_at_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len) // OK a tester 
 {
   if (p0 >= len) return (len);
@@ -375,7 +377,7 @@ DECLSPEC int mangle_prepend_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED con
 {
   const int out_len = len + 1;
 
-  if (out_len >= RP_PASSWORD_SIZE) return (len);
+  if (out_len >= RP_PASSWORD_SIZE) return len;
 
   for (int pos = len - 1; pos >= 0; pos--)
   {
@@ -384,7 +386,7 @@ DECLSPEC int mangle_prepend_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED con
 
   buf[0] = p0;
 
-  return (out_len);
+  return out_len;
 }
 
 DECLSPEC int mangle_rotate_left_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len)  // OK a tester, vérifier len
@@ -394,7 +396,7 @@ DECLSPEC int mangle_rotate_left_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED
     exchange_byte_utf16le (buf, l, r);
   }
 
-  return (len);
+  return len;
 }
 
 DECLSPEC int mangle_rotate_right_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len)  // OK a tester, vérifier len
@@ -404,12 +406,12 @@ DECLSPEC int mangle_rotate_right_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSE
     exchange_byte_utf16le (buf, l, r);
   }
 
-  return (len);
+  return len;
 }
 
 DECLSPEC int mangle_delete_at_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)  // OK a tester, vérifier len
 {
-  if (p0 >= len) return (len);
+  if (p0 >= len) return len;
 
   for (int pos = p0; pos < len - 1; pos++)
   {
@@ -435,9 +437,9 @@ DECLSPEC int mangle_delete_last_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED
 
 DECLSPEC int mangle_extract_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester , verifier len
 {
-  if (p0 >= len) return (len);
+  if (p0 >= len) return len;
 
-  if ((p0 + p1) > len) return (len);
+  if ((p0 + p1) > len) return len;
 
   for (int pos = 0; pos < p1; pos++)
   {
@@ -449,14 +451,14 @@ DECLSPEC int mangle_extract_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED con
     buf[pos] = 0;
   }
 
-  return (p1);
+  return p1;
 }
 
 DECLSPEC int mangle_omit_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester , verifier len
 {
-  if (p0 >= len) return (len);
+  if (p0 >= len) return len;
 
-  if ((p0 + p1) > len) return (len);
+  if ((p0 + p1) > len) return len;
 
   for (int pos = p0; pos < len - p1; pos++)
   {
@@ -473,11 +475,11 @@ DECLSPEC int mangle_omit_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const 
 
 DECLSPEC int mangle_insert_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester , verifier len
 {
-  if (p0 >= len + 1) return (len);
+  if (p0 >= len + 1) return len;
 
   const int out_len = len + 1;
 
-  if (out_len >= RP_PASSWORD_SIZE) return (len);
+  if (out_len >= RP_PASSWORD_SIZE) return len;
 
   for (int pos = len - 1; pos > p0 - 1; pos--)
   {
@@ -486,28 +488,91 @@ DECLSPEC int mangle_insert_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED cons
 
   buf[p0] = p1;
 
-  return (out_len);
+  return out_len;
 }
 
+DECLSPEC int mangle_insert_every_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)
+{
+  if (p0 == 0) return len;
+
+  if (p0 >= len + 1) return len;
+
+  const int out_len = len + (len / p0);
+
+  if (out_len >= RP_PASSWORD_SIZE) return len;
+
+  for (u8 src = len, dest = out_len; src > 0; src--, dest--) {
+    if ((src % p0) == 0) { buf[dest-1] = p1; dest--; }
+    buf[dest-1] = buf[src-1];
+  }
+
+  return out_len;
+}
+
+DECLSPEC int mangle_to_hex_lower_utf16le  (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) //TODO
+{
+  const int out_len = len * 2;
+
+  if (out_len >= RP_PASSWORD_SIZE) return len;
+
+  for (int pos = len - 1; pos >= 0; pos--)
+  {
+    const u8 c = buf[pos];
+
+    const u8 tbl[0x10] =
+    {
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      'a', 'b', 'c', 'd', 'e', 'f',
+    };
+
+    buf[pos * 2 + 1] = tbl[c >>  0 & 15];
+    buf[pos * 2] = tbl[c >>  4 & 15];
+  }
+
+  return out_len;
+}
+
+DECLSPEC int mangle_to_hex_upper_utf16le  (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)//TODO
+{
+  const int out_len = len * 2;
+
+  if (out_len >= RP_PASSWORD_SIZE) return len;
+
+  for (int pos = len - 1; pos >= 0; pos--)
+  {
+    const u8 c = buf[pos];
+
+    const u8 tbl[0x10] =
+    {
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      'A', 'B', 'C', 'D', 'E', 'F',
+    };
+
+    buf[pos * 2 + 1] = tbl[c >>  0 & 15];
+    buf[pos * 2] = tbl[c >>  4 & 15];
+  }
+
+  return out_len;
+}
 DECLSPEC int mangle_overstrike_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester , verifier len
 {
-  if (p0 >= len) return (len);
+  if (p0 >= len) return len;
 
   buf[p0] = p1;
 
-  return (len);
+  return len;
 }
 
 DECLSPEC int mangle_truncate_at_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester , verifier len
 {
-  if (p0 >= len) return (len);
+  if (p0 >= len) return len;
 
   for (int pos = p0; pos < len; pos++)
   {
     buf[pos] = 0;
   }
 
-  return (p0);
+  return p0;
 }
 
 DECLSPEC int mangle_replace_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester , verifier len
@@ -519,9 +584,92 @@ DECLSPEC int mangle_replace_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED con
     buf[pos] = p1;
   }
 
-  return (len);
+  return len;
 }
 
+DECLSPEC int mangle_replace_class_l (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // TODO
+{
+  for (int pos = 0; pos < len; pos++)
+  {
+    if (!is_l (buf[pos])) continue;
+
+    buf[pos] = p1;
+  }
+
+  return len;
+}
+
+DECLSPEC int mangle_replace_class_u (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+{
+  for (int pos = 0; pos < len; pos++)
+  {
+    if (!is_u (buf[pos])) continue;
+
+    buf[pos] = p1;
+  }
+
+  return len;
+}
+
+DECLSPEC int mangle_replace_class_d (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+{
+  for (int pos = 0; pos < len; pos++)
+  {
+    if (!is_d (buf[pos])) continue;
+
+    buf[pos] = p1;
+  }
+
+  return len;
+}
+
+DECLSPEC int mangle_replace_class_lh (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // TODO
+{
+  for (int pos = 0; pos < len; pos++)
+  {
+    if (!is_lh (buf[pos])) continue;
+
+    buf[pos] = p1;
+  }
+
+  return len;
+}
+
+DECLSPEC int mangle_replace_class_uh (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+{
+  for (int pos = 0; pos < len; pos++)
+  {
+    if (!is_uh (buf[pos])) continue;
+
+    buf[pos] = p1;
+  }
+
+  return len;
+}
+
+DECLSPEC int mangle_replace_class_s (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+{
+  for (int pos = 0; pos < len; pos++)
+  {
+    if (!is_s (buf[pos])) continue;
+
+    buf[pos] = p1;
+  }
+
+  return len;
+}
+
+DECLSPEC int mangle_replace_class_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // TODO
+{
+       if (p0 == 'l') return mangle_replace_class_l  (p0, p1, buf, len);
+  else if (p0 == 'u') return mangle_replace_class_u  (p0, p1, buf, len);
+  else if (p0 == 'd') return mangle_replace_class_d  (p0, p1, buf, len);
+  else if (p0 == 'h') return mangle_replace_class_lh (p0, p1, buf, len);
+  else if (p0 == 'H') return mangle_replace_class_uh (p0, p1, buf, len);
+  else if (p0 == 's') return mangle_replace_class_s  (p0, p1, buf, len);
+
+  return len;
+}
 DECLSPEC int mangle_purgechar_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)
 {
   int out_len = 0;
@@ -540,15 +688,154 @@ DECLSPEC int mangle_purgechar_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED c
     buf[pos] = 0;
   }
 
-  return (out_len);
+  return out_len;
 }
+
+DECLSPEC int mangle_purgechar_class_l_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // TODO
+{
+  int out_len = 0;
+
+  for (int pos = 0; pos < len; pos++)
+  {
+    if (is_l (buf[pos])) continue;
+
+    buf[out_len] = buf[pos];
+
+    out_len++;
+  }
+
+  for (int pos = out_len; pos < len; pos++)
+  {
+    buf[pos] = 0;
+  }
+
+  return out_len;
+}
+
+DECLSPEC int mangle_purgechar_class_u_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+{
+  int out_len = 0;
+
+  for (int pos = 0; pos < len; pos++)
+  {
+    if (is_u (buf[pos])) continue;
+
+    buf[out_len] = buf[pos];
+
+    out_len++;
+  }
+
+  for (int pos = out_len; pos < len; pos++)
+  {
+    buf[pos] = 0;
+  }
+
+  return out_len;
+}
+
+DECLSPEC int mangle_purgechar_class_d_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+{
+  int out_len = 0;
+
+  for (int pos = 0; pos < len; pos++)
+  {
+    if (is_d (buf[pos])) continue;
+
+    buf[out_len] = buf[pos];
+
+    out_len++;
+  }
+
+  for (int pos = out_len; pos < len; pos++)
+  {
+    buf[pos] = 0;
+  }
+
+  return out_len;
+}
+
+DECLSPEC int mangle_purgechar_class_lh_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+{
+  int out_len = 0;
+
+  for (int pos = 0; pos < len; pos++)
+  {
+    if (is_lh (buf[pos])) continue;
+
+    buf[out_len] = buf[pos];
+
+    out_len++;
+  }
+
+  for (int pos = out_len; pos < len; pos++)
+  {
+    buf[pos] = 0;
+  }
+
+  return out_len;
+}
+
+DECLSPEC int mangle_purgechar_class_uh_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+{
+  int out_len = 0;
+
+  for (int pos = 0; pos < len; pos++)
+  {
+    if (is_uh (buf[pos])) continue;
+
+    buf[out_len] = buf[pos];
+
+    out_len++;
+  }
+
+  for (int pos = out_len; pos < len; pos++)
+  {
+    buf[pos] = 0;
+  }
+
+  return out_len;
+}
+
+DECLSPEC int mangle_purgechar_class_s_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+{
+  int out_len = 0;
+
+  for (int pos = 0; pos < len; pos++)
+  {
+    if (is_s (buf[pos])) continue;
+
+    buf[out_len] = buf[pos];
+
+    out_len++;
+  }
+
+  for (int pos = out_len; pos < len; pos++)
+  {
+    buf[pos] = 0;
+  }
+
+  return out_len;
+}
+
+DECLSPEC int mangle_purgechar_class_utf16le  (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+{
+       if (p0 == 'l') return mangle_purgechar_class_l_utf16le  (p0, p1, buf, len);
+  else if (p0 == 'u') return mangle_purgechar_class_u_utf16le  (p0, p1, buf, len);
+  else if (p0 == 'd') return mangle_purgechar_class_d_utf16le  (p0, p1, buf, len);
+  else if (p0 == 'h') return mangle_purgechar_class_lh_utf16le (p0, p1, buf, len);
+  else if (p0 == 'H') return mangle_purgechar_class_uh_utf16le (p0, p1, buf, len);
+  else if (p0 == 's') return mangle_purgechar_class_s_utf16le  (p0, p1, buf, len);
+
+  return len;
+}
+
 
 DECLSPEC int mangle_dupechar_first_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester , verifier len
 {
   const int out_len = len + p0;
 
-  if (len     ==                0) return (len);
-  if (out_len >= RP_PASSWORD_SIZE) return (len);
+  if (len     ==                0) return len;
+  if (out_len >= RP_PASSWORD_SIZE) return len;
 
   const u16 c = buf[0];
 
@@ -557,15 +844,15 @@ DECLSPEC int mangle_dupechar_first_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNU
     mangle_prepend_utf16le (c, 0, buf, len + i);
   }
 
-  return (out_len);
+  return out_len;
 }
 
 DECLSPEC int mangle_dupechar_last_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester , verifier len
 {
   const int out_len = len + p0;
 
-  if (len     ==                0) return (len);
-  if (out_len >= RP_PASSWORD_SIZE) return (len);
+  if (len     ==                0) return len;
+  if (out_len >= RP_PASSWORD_SIZE) return len;
 
   const u16 c = buf[len - 1];
 
@@ -574,14 +861,14 @@ DECLSPEC int mangle_dupechar_last_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUS
     mangle_append_utf16le (c, 0, buf, len + i);
   }
 
-  return (out_len);
+  return out_len;
 }
 
 DECLSPEC int mangle_dupechar_all_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester , verifier len
 {
   const int out_len = len + len;
 
-  if (out_len >= RP_PASSWORD_SIZE) return (len);
+  if (out_len >= RP_PASSWORD_SIZE) return len;
 
   for (int pos = len - 1; pos >= 0; pos--)
   {
@@ -592,100 +879,109 @@ DECLSPEC int mangle_dupechar_all_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSE
     buf[new_pos + 1] = buf[pos];
   }
 
-  return (out_len);
+  return out_len;
 }
 
 DECLSPEC int mangle_switch_first_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len) // OK a tester , verifier len
 {
-  if (len < 2) return (len);
+  if (len < 2) return len;
 
   exchange_byte_utf16le (buf, 0, 1);
 
-  return (len);
+  return len;
 }
 
 DECLSPEC int mangle_switch_last_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len) // OK a tester , verifier len
 {
-  if (len < 2) return (len);
+  if (len < 2) return len;
 
   exchange_byte_utf16le (buf, len - 2, len - 1);
 
-  return (len);
+  return len;
 }
 
 DECLSPEC int mangle_switch_at_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len) // OK a tester , verifier len
 {
-  if (p0 >= len) return (len);
-  if (p1 >= len) return (len);
+  if (p0 >= len) return len;
+  if (p1 >= len) return len;
 
   exchange_byte_utf16le (buf, p0, p1);
 
-  return (len);
+  return len;
 }
 
 DECLSPEC int mangle_chr_shiftl_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester 
 {
-  if (p0 >= len) return (len);
+  if (p0 >= len) return len;
 
-  buf[p0]  <<= 1;
+  buf[p0] <<= 1;
 
-  return (len);
+  return len;
 }
 
 DECLSPEC int mangle_chr_shiftr_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester 
 {
-  if (p0 >= len) return (len);
+  if (p0 >= len) return len;
 
   buf[p0] >>= 1;
 
-  return (len);
+  return len;
 }
 
 DECLSPEC int mangle_chr_incr_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester 
 {
-  if (p0 >= len) return (len);
+  if (p0 >= len) return len;
 
   buf[p0]++;
 
-  return (len);
+  return len;
 }
 
 DECLSPEC int mangle_chr_decr_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester 
 {
-  if (p0 >= len) return (len);
+  if (p0 >= len) return len;
 
   buf[p0]--;
 
-  return (len);
+  return len;
+}
+
+DECLSPEC int mangle_chr_add_utf16le  (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)//TODO
+{
+  if (p0 >= len) return len;
+
+  buf[p0]+=p1;
+
+  return len;
 }
 
 DECLSPEC int mangle_replace_np1_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester 
 {
-  if ((p0 + 1) >= len) return (len);
+  if ((p0 + 1) >= len) return len;
 
   buf[p0] = buf[p0 + 1];
 
-  return (len);
+  return len;
 }
 
 DECLSPEC int mangle_replace_nm1_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester 
 {
-  if (p0 == 0) return (len);
+  if (p0 == 0) return len;
 
-  if (p0 >= len) return (len);
+  if (p0 >= len) return len;
 
   buf[p0] = buf[p0 - 1];
 
-  return (len);
+  return len;
 }
 
 DECLSPEC int mangle_dupeblock_first_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // OK a tester 
 {
-  if (p0 > len) return (len);
+  if (p0 > len) return len;
 
   const int out_len = len + p0;
 
-  if (out_len >= RP_PASSWORD_SIZE) return (len);
+  if (out_len >= RP_PASSWORD_SIZE) return len;
 
   for (int i = 0; i < p0; i++)
   {
@@ -694,16 +990,16 @@ DECLSPEC int mangle_dupeblock_first_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UN
     mangle_insert_utf16le (i, c, buf, len + i);
   }
 
-  return (out_len);
+  return out_len;
 }
 
 DECLSPEC int mangle_dupeblock_last_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)
 {
-  if (p0 > len) return (len);
+  if (p0 > len) return len;
 
   const int out_len = len + p0;
 
-  if (out_len >= RP_PASSWORD_SIZE) return (len);
+  if (out_len >= RP_PASSWORD_SIZE) return len;
 
   for (int i = 0; i < p0; i++)
   {
@@ -712,12 +1008,12 @@ DECLSPEC int mangle_dupeblock_last_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNU
     mangle_append_utf16le (c, 0, buf, len + i);
   }
 
-  return (out_len);
+  return out_len;
 }
 
 DECLSPEC int mangle_title_sep_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len) // en cours
 {
-  if (len >= RP_PASSWORD_SIZE) return (len);
+  if (len >= RP_PASSWORD_SIZE) return len;
 
   u32 rem = 0xffff;
 
@@ -739,9 +1035,183 @@ DECLSPEC int mangle_title_sep_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED c
     buf[idx] &= ~(generate_cmask_utf16le (buf[idx]) & out);
   }
 
-  return (len);
+  return len;
 }
 
+
+DECLSPEC int mangle_title_sep_class_l_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len) //TODO
+{
+  if (len >= RP_PASSWORD_SIZE) return len;
+
+  u32 rem = 0xff;
+
+  for (int i = 0, idx = 0; i < len; i += 4, idx += 1)
+  {
+    const u32 t = buf[idx];
+
+    buf[idx] = t | generate_cmask (t);
+
+    u32 out = rem;
+
+    rem = 0;
+
+    if (is_l ((t >>  0) & 0xff)) out |= 0x0000ff00;
+    if (is_l ((t >>  8) & 0xff)) out |= 0x00ff0000;
+    if (is_l ((t >> 16) & 0xff)) out |= 0xff000000;
+    if (is_l ((t >> 24) & 0xff)) rem |= 0x000000ff;
+
+    buf[idx] &= ~(generate_cmask (buf[idx]) & out);
+  }
+
+  return len;
+}
+
+DECLSPEC int mangle_title_sep_class_u_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len) //TODO
+{
+  if (len >= RP_PASSWORD_SIZE) return len;
+
+  u32 rem = 0xff;
+
+  for (int i = 0, idx = 0; i < len; i += 4, idx += 1)
+  {
+    const u32 t = buf[idx];
+
+    buf[idx] = t | generate_cmask (t);
+
+    u32 out = rem;
+
+    rem = 0;
+
+    if (is_u ((t >>  0) & 0xff)) out |= 0x0000ff00;
+    if (is_u ((t >>  8) & 0xff)) out |= 0x00ff0000;
+    if (is_u ((t >> 16) & 0xff)) out |= 0xff000000;
+    if (is_u ((t >> 24) & 0xff)) rem |= 0x000000ff;
+
+    buf[idx] &= ~(generate_cmask (buf[idx]) & out);
+  }
+
+  return len;
+}
+
+DECLSPEC int mangle_title_sep_class_d_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len) //TODO
+{
+  if (len >= RP_PASSWORD_SIZE) return len;
+
+  u32 rem = 0xff;
+
+  for (int i = 0, idx = 0; i < len; i += 4, idx += 1)
+  {
+    const u32 t = buf[idx];
+
+    buf[idx] = t | generate_cmask (t);
+
+    u32 out = rem;
+
+    rem = 0;
+
+    if (is_d ((t >>  0) & 0xff)) out |= 0x0000ff00;
+    if (is_d ((t >>  8) & 0xff)) out |= 0x00ff0000;
+    if (is_d ((t >> 16) & 0xff)) out |= 0xff000000;
+    if (is_d ((t >> 24) & 0xff)) rem |= 0x000000ff;
+
+    buf[idx] &= ~(generate_cmask (buf[idx]) & out);
+  }
+
+  return len;
+}
+
+DECLSPEC int mangle_title_sep_class_lh_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len) //TODO
+{
+  if (len >= RP_PASSWORD_SIZE) return len;
+
+  u32 rem = 0xff;
+
+  for (int i = 0, idx = 0; i < len; i += 4, idx += 1)
+  {
+    const u32 t = buf[idx];
+
+    buf[idx] = t | generate_cmask (t);
+
+    u32 out = rem;
+
+    rem = 0;
+
+    if (is_lh ((t >>  0) & 0xff)) out |= 0x0000ff00;
+    if (is_lh ((t >>  8) & 0xff)) out |= 0x00ff0000;
+    if (is_lh ((t >> 16) & 0xff)) out |= 0xff000000;
+    if (is_lh ((t >> 24) & 0xff)) rem |= 0x000000ff;
+
+    buf[idx] &= ~(generate_cmask (buf[idx]) & out);
+  }
+
+  return len;
+}
+
+DECLSPEC int mangle_title_sep_class_uh_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len) //TODO
+{
+  if (len >= RP_PASSWORD_SIZE) return len;
+
+  u32 rem = 0xff;
+
+  for (int i = 0, idx = 0; i < len; i += 4, idx += 1)
+  {
+    const u32 t = buf[idx];
+
+    buf[idx] = t | generate_cmask (t);
+
+    u32 out = rem;
+
+    rem = 0;
+
+    if (is_uh ((t >>  0) & 0xff)) out |= 0x0000ff00;
+    if (is_uh ((t >>  8) & 0xff)) out |= 0x00ff0000;
+    if (is_uh ((t >> 16) & 0xff)) out |= 0xff000000;
+    if (is_uh ((t >> 24) & 0xff)) rem |= 0x000000ff;
+
+    buf[idx] &= ~(generate_cmask (buf[idx]) & out);
+  }
+
+  return len;
+}
+
+DECLSPEC int mangle_title_sep_class_s_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len) //TODO
+{
+  if (len >= RP_PASSWORD_SIZE) return len;
+
+  u32 rem = 0xff;
+
+  for (int i = 0, idx = 0; i < len; i += 4, idx += 1)
+  {
+    const u32 t = buf[idx];
+
+    buf[idx] = t | generate_cmask (t);
+
+    u32 out = rem;
+
+    rem = 0;
+
+    if (is_s ((t >>  0) & 0xff)) out |= 0x0000ff00;
+    if (is_s ((t >>  8) & 0xff)) out |= 0x00ff0000;
+    if (is_s ((t >> 16) & 0xff)) out |= 0xff000000;
+    if (is_s ((t >> 24) & 0xff)) rem |= 0x000000ff;
+
+    buf[idx] &= ~(generate_cmask (buf[idx]) & out);
+  }
+
+  return len;
+}
+
+DECLSPEC int mangle_title_sep_class_utf16le  (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int len) //TODO
+{
+       if (p0 == 'l') return mangle_title_sep_class_l_utf16le  (p0, p1, buf, len);
+  else if (p0 == 'u') return mangle_title_sep_class_u_utf16le  (p0, p1, buf, len);
+  else if (p0 == 'd') return mangle_title_sep_class_d_utf16le  (p0, p1, buf, len);
+  else if (p0 == 'h') return mangle_title_sep_class_lh_utf16le (p0, p1, buf, len);
+  else if (p0 == 'H') return mangle_title_sep_class_uh_utf16le (p0, p1, buf, len);
+  else if (p0 == 's') return mangle_title_sep_class_s_utf16le  (p0, p1, buf, len);
+
+  return len;
+}
 DECLSPEC int apply_rule_utf16le (const u32 name, MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u32 *buf, const int in_len)
 {
   int out_len = in_len;
@@ -753,6 +1223,7 @@ DECLSPEC int apply_rule_utf16le (const u32 name, MAYBE_UNUSED const u16 p0, MAYB
     case RULE_OP_MANGLE_UREST:            out_len = mangle_urest_utf16le            (p0, p1,        buf, out_len); break;
     case RULE_OP_MANGLE_UREST_LFIRST:     out_len = mangle_urest_lfirst_utf16le     (p0, p1,        buf, out_len); break;
     case RULE_OP_MANGLE_TREST:            out_len = mangle_trest_utf16le            (p0, p1,        buf, out_len); break;
+    case RULE_OP_MANGLE_SHIFT_CASE:       out_len = mangle_shift_case_utf16le       (p0, p1,        buf, out_len); break;
     case RULE_OP_MANGLE_TOGGLE_AT:        out_len = mangle_toggle_at_utf16le        (p0, p1,        buf, out_len); break;
     case RULE_OP_MANGLE_TOGGLE_AT_SEP:    out_len = mangle_toggle_at_sep_utf16le    (p0, p1,        buf, out_len); break;
     case RULE_OP_MANGLE_REVERSE:          out_len = mangle_reverse_utf16le          (p0, p1,        buf, out_len); break;
@@ -769,10 +1240,13 @@ DECLSPEC int apply_rule_utf16le (const u32 name, MAYBE_UNUSED const u16 p0, MAYB
     case RULE_OP_MANGLE_EXTRACT:          out_len = mangle_extract_utf16le          (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_OMIT:             out_len = mangle_omit_utf16le             (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_INSERT:           out_len = mangle_insert_utf16le           (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
+    case RULE_OP_MANGLE_INSERT_EVERY:     out_len = mangle_insert_every_utf16le     (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_OVERSTRIKE:       out_len = mangle_overstrike_utf16le       (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_TRUNCATE_AT:      out_len = mangle_truncate_at_utf16le      (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_REPLACE:          out_len = mangle_replace_utf16le          (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
+    case RULE_OP_MANGLE_REPLACE_CLASS:    out_len = mangle_replace_class_utf16le    (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_PURGECHAR:        out_len = mangle_purgechar_utf16le        (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
+    case RULE_OP_MANGLE_PURGECHAR_CLASS:  out_len = mangle_purgechar_class_utf16le  (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_DUPECHAR_FIRST:   out_len = mangle_dupechar_first_utf16le   (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_DUPECHAR_LAST:    out_len = mangle_dupechar_last_utf16le    (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_DUPECHAR_ALL:     out_len = mangle_dupechar_all_utf16le     (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
@@ -783,12 +1257,16 @@ DECLSPEC int apply_rule_utf16le (const u32 name, MAYBE_UNUSED const u16 p0, MAYB
     case RULE_OP_MANGLE_CHR_SHIFTR:       out_len = mangle_chr_shiftr_utf16le       (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_CHR_INCR:         out_len = mangle_chr_incr_utf16le         (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_CHR_DECR:         out_len = mangle_chr_decr_utf16le         (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
+    case RULE_OP_MANGLE_CHR_ADD:          out_len = mangle_chr_add_utf16le          (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_REPLACE_NP1:      out_len = mangle_replace_np1_utf16le      (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_REPLACE_NM1:      out_len = mangle_replace_nm1_utf16le      (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_DUPEBLOCK_FIRST:  out_len = mangle_dupeblock_first_utf16le  (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_DUPEBLOCK_LAST:   out_len = mangle_dupeblock_last_utf16le   (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
     case RULE_OP_MANGLE_TITLE_SEP:        out_len = mangle_title_sep_utf16le        (p0, p1,        buf, out_len); break;
+    case RULE_OP_MANGLE_TITLE_SEP_CLASS:  out_len = mangle_title_sep_class_utf16le  (p0, p1,                   buf, out_len); break;
     case RULE_OP_MANGLE_TITLE:            out_len = mangle_title_sep_utf16le        (' ', p1,       buf, out_len); break;
+    case RULE_OP_MANGLE_TO_HEX_LOWER:     out_len = mangle_to_hex_lower_utf16le     (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
+    case RULE_OP_MANGLE_TO_HEX_UPPER:     out_len = mangle_to_hex_upper_utf16le     (p0, p1, (PRIVATE_AS u16 *) buf, out_len); break;
   }
 
   return out_len;

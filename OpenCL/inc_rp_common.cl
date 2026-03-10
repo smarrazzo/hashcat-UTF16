@@ -90,7 +90,32 @@ DECLSPEC MAYBE_UNUSED u32 generate_cmask (const u32 value)
   return rmask & ~hmask & lmask;
 }
 
+
+DECLSPEC MAYBE_UNUSED u32 generate_cmask_utf16le (const u32 value)
+{
+  const u32 rmask =  ((value & 0x00400040u) >> 1u)
+                  & ~((value & 0x00800080u) >> 2u);
+
+  const u32 hmask = (value & 0x001f001fu) + 0x00050005u;
+  const u32 lmask = (value & 0x001f001fu) + 0x001f001fu;
+
+  const u32 high = ((value & 0xFFFF0000u)>0x00C00000?0x00200000u:0x00000000u) | ((value & 0x0000FFFFu)>0x00C0?0x00000020u:0x00000000u); 
+
+  return high | (rmask & ~hmask & lmask);
+
+}
+
 DECLSPEC MAYBE_UNUSED u32 generate_cshift_mask (const u32 value)
+{
+  const u32 mask = (((u32) cshift_lookup[(value >> 24) & 0xff]) << 24) |
+                   (((u32) cshift_lookup[(value >> 16) & 0xff]) << 16) |
+                   (((u32) cshift_lookup[(value >>  8) & 0xff]) <<  8) |
+                   (((u32) cshift_lookup[(value >>  0) & 0xff]) <<  0);
+
+  return mask;
+}
+
+DECLSPEC MAYBE_UNUSED u32 generate_cshift_mask_utf16le (const u32 value) // TODO
 {
   const u32 mask = (((u32) cshift_lookup[(value >> 24) & 0xff]) << 24) |
                    (((u32) cshift_lookup[(value >> 16) & 0xff]) << 16) |
