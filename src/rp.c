@@ -258,14 +258,14 @@ int generate_random_rule (char rule_buf[RP_RULE_SIZE], const u32 rp_gen_func_min
 #define INCR_POS_UTF16LE if (++rule_pos == rule_len) return (-1)
 
 #define SET_NAME_UTF16LE(rule,val) (rule)->cmds[rule_cnt]  = ((val) & 0xffff) <<  0
-#define SET_P0_UTF16LE(rule,val)   do { INCR_POS_UTF16LE;  (rule)->cmds[rule_cnt] |= ((u64)(val) & 0xffff) <<  16;  } while(0)
-#define SET_P1_UTF16LE(rule,val)   do { INCR_POS_UTF16LE;  (rule)->cmds[rule_cnt] |= ((u64)(val) & 0xffff) <<  32;  } while(0)
+#define SET_P0_UTF16LE(rule,val)   do { INCR_POS_UTF16LE;  (rule)->cmds[rule_cnt] |= ((u64)(val) & 0xfffful) <<  16;  } while(0)
+#define SET_P1_UTF16LE(rule,val)   do { INCR_POS_UTF16LE;  (rule)->cmds[rule_cnt] |= ((u64)(val) & 0xfffful) <<  32;  } while(0)
 //#define GET_NAME_UTF16LE(rule)     rule_cmd = (((rule)->cmds[rule_cnt] >>  0) & 0xffff)
 //#define GET_P0_UTF16LE(rule)       INCR_POS_UTF16LE; rule_buf[rule_pos] = (((rule)->cmds[rule_cnt] >>  16) & 0xffff)
 //#define GET_P1_UTF16LE(rule)       INCR_POS_UTF16LE; rule_buf[rule_pos] = (((rule)->cmds[rule_cnt] >> 12) & 0xffff)
 
-#define SET_P0_CONV_UTF16LE(rule,val)  INCR_POS_UTF16LE; (rule)->cmds[rule_cnt] |= ((conv_ctoi (val)) & 0xffff) <<  16
-#define SET_P1_CONV_UTF16LE(rule,val)  INCR_POS_UTF16LE; (rule)->cmds[rule_cnt] |= ((conv_ctoi (val)) & 0xffff) <<  32
+#define SET_P0_CONV_UTF16LE(rule,val)  INCR_POS_UTF16LE; (rule)->cmds[rule_cnt] |= ((u64)(conv_ctoi (val) * 2) & 0xfffful) <<  16
+#define SET_P1_CONV_UTF16LE(rule,val)  INCR_POS_UTF16LE; (rule)->cmds[rule_cnt] |= ((u64)(conv_ctoi (val) * 2) & 0xfffful) <<  32
 //#define GET_P0_CONV_UTF16LE(rule)      INCR_POS_UTF16LE; rule_buf[rule_pos] = (char) conv_itoc (((rule)->cmds[rule_cnt] >>  16) & 0xffff)
 //#define GET_P1_CONV_UTF16LE(rule)      INCR_POS_UTF16LE; rule_buf[rule_pos] = (char) conv_itoc (((rule)->cmds[rule_cnt] >> 12) & 0xffff)
 
@@ -1125,8 +1125,12 @@ int kernel_rules_load (hashcat_ctx_t *hashcat_ctx, kernel_rule_t **out_buf, u32 
 {
   const user_options_t *user_options = hashcat_ctx->user_options;
 
-  iconv_t iconv_ctx = iconv_open (user_options->encoding_to, user_options->encoding_from);
+  iconv_t iconv_ctx;
   char  iconv_tmp[HCBUFSIZ_TINY] = { 0 };
+
+  if(hashcat_ctx->module_ctx->module_iconv != MODULE_DEFAULT){
+    iconv_ctx = iconv_open (user_options->encoding_to, user_options->encoding_from);
+  }
 
   /**
    * load rules
@@ -1218,7 +1222,7 @@ int kernel_rules_load (hashcat_ctx_t *hashcat_ctx, kernel_rule_t **out_buf, u32 
 
       char *line_buf_new = rule_buf;
 
-      if(user_options->hash_mode & 0x2){
+      if(hashcat_ctx->module_ctx->module_iconv != MODULE_DEFAULT){
         char  *iconv_ptr = iconv_tmp;
         size_t iconv_sz  = HCBUFSIZ_TINY;
         iconv (iconv_ctx, &line_buf_new, &rule_len, &iconv_ptr, &iconv_sz);
@@ -1406,7 +1410,7 @@ int kernel_rules_load (hashcat_ctx_t *hashcat_ctx, kernel_rule_t **out_buf, u32 
   *out_buf = kernel_rules_buf;
   //event_log_warning (hashcat_ctx, "out_buff cmd32 : %.16llX ", (*out_buf)->cmds[0] );
   //event_log_warning (hashcat_ctx, "out_buff cmd64 : %.16llX ", (*out_buf)->cmds[0] );
-  iconv_close (iconv_ctx);
+  if(hashcat_ctx->module_ctx->module_iconv != MODULE_DEFAULT)  iconv_close (iconv_ctx);
   return 0;
 }
 

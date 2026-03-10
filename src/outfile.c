@@ -174,12 +174,14 @@ int build_plain (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, pl
         }
         else
         {
-          for (int i = 0; i < 8; i++)
+          for (int i = 0; i < 16; i++)
           {
             plain_buf[i] = pw.i[i];
           }
-          if(user_options->hash_mode & 0x2) plain_len = apply_rules_optimized_utf16le (straight_ctx->kernel_rules_buf[off].cmds, &plain_buf[0], &plain_buf[4], &plain_buf[8], &plain_buf[12], pw.pw_len);
-          else plain_len = apply_rules_optimized ((u32*)(straight_ctx->kernel_rules_buf[off].cmds), &plain_buf[0], &plain_buf[4], pw.pw_len);
+          if(hashcat_ctx->module_ctx->module_iconv != MODULE_DEFAULT){plain_len = apply_rules_optimized_utf16le (straight_ctx->kernel_rules_buf[off].cmds, &plain_buf[0], &plain_buf[4], &plain_buf[8], &plain_buf[12], pw.pw_len);
+          //printf("AV len %d : buf0[0] : %.8X buf0[1] : %.8X buf0[2] : %.8X buf0[3] : %.8X buf1[0] : %.8X buf1[1] : %.8X buf1[2] : %.8X buf1[3] : %.8X\n", plain_len, *plain_buf,*(plain_buf+1),*(plain_buf+2),*(plain_buf+3),*(plain_buf+4),*(plain_buf+5),*(plain_buf+6),*(plain_buf+7));
+          //printf("AV len %d : buf2[0] : %.8X buf2[1] : %.8X buf2[2] : %.8X buf2[3] : %.8X buf3[0] : %.8X buf3[1] : %.8X buf3[2] : %.8X buf3[3] : %.8X\n", plain_len, *(plain_buf+8),*(plain_buf+9),*(plain_buf+10),*(plain_buf+11),*(plain_buf+12),*(plain_buf+13),*(plain_buf+14),*(plain_buf+15));
+          }else plain_len = apply_rules_optimized ((u32*)(straight_ctx->kernel_rules_buf[off].cmds), &plain_buf[0], &plain_buf[4], pw.pw_len);
         }
       }
       else
@@ -188,7 +190,7 @@ int build_plain (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, pl
         {
           plain_buf[i] = pw.i[i];
         }
-        if(user_options->hash_mode & 0x2) plain_len = apply_rules_utf16le (straight_ctx->kernel_rules_buf[off].cmds, plain_buf, pw.pw_len);
+        if(hashcat_ctx->module_ctx->module_iconv != MODULE_DEFAULT) plain_len = apply_rules_utf16le (straight_ctx->kernel_rules_buf[off].cmds, plain_buf, pw.pw_len);
         else plain_len = apply_rules ((u32*)straight_ctx->kernel_rules_buf[off].cmds, plain_buf, pw.pw_len);
       }
     }
@@ -741,11 +743,11 @@ int outfile_write (hashcat_ctx_t *hashcat_ctx, const char *out_buf, const int ou
         if (user_options->outfile_autohex == true)
         {
           const bool always_ascii = (hashconfig->opts_type & OPTS_TYPE_PT_ALWAYS_ASCII) ? true : false;
-          if(!(hashcat_ctx->user_options->hash_mode & 0x2)) convert_to_hex = need_hexify (plain_ptr, plain_len, hashconfig->separator, always_ascii);
+          if(hashcat_ctx->module_ctx->module_iconv == MODULE_DEFAULT) convert_to_hex = need_hexify (plain_ptr, plain_len, hashconfig->separator, always_ascii);
         }
       }
 
-       if(user_options->hash_mode & 0x2){
+       if(hashcat_ctx->module_ctx->module_iconv != MODULE_DEFAULT){
 
         char* line_buf_new = NULL;
         line_buf_new = (char *) malloc( HCBUFSIZ_TINY * sizeof(char) );

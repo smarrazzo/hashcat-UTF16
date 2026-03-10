@@ -4114,7 +4114,7 @@ int run_cracker (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, co
     if (iconv_ctx == (iconv_t) -1) return -1;
   }
 
-  if (user_options->hash_mode & 0x2)
+  if (hashcat_ctx->module_ctx->module_iconv != MODULE_DEFAULT)
   {
     iconv_enabled = true;
 

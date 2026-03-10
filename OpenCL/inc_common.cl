@@ -2170,10 +2170,10 @@ DECLSPEC u32 hc_bytealign_S (const u32 a, const u32 b, const int c)
 DECLSPEC u32 hc_2bytesalign_S (const u32 a, const u32 b, const int c)
 {
   u32 r = 0;
-  const int cm = c & 1;
+  const int cm = c & 2;
 
        if (cm == 0) { r = b;                     }
-  else if (cm == 1) { r = (a >> 16) | (b <<  16);}
+  else if (cm == 2) { r = (a >> 16) | (b << 16); }
   return r;
 }
 
@@ -21640,8 +21640,8 @@ DECLSPEC void set_mark_1x4_S (PRIVATE_AS u32 *v, const u32 offset)
 
 DECLSPEC void set_mark_1x4_S_16 (PRIVATE_AS u32 *v, const u32 offset)
 {
-  const u32 c = (offset & 15) / 2;
-  const u32 r = 0xffff << ((offset & 1) * 16);
+  const u32 c = (offset & 15) / 4;
+  const u32 r = 0xffff << ((offset & 2) * 8);
 
   v[0] = (c == 0) ? r : 0;
   v[1] = (c == 1) ? r : 0;
