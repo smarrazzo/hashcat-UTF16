@@ -1880,6 +1880,428 @@ int _old_apply_rule (const char *rule, int rule_len, char in[RP_PASSWORD_SIZE], 
   #undef HCFREE_AND_RETURN
 }
 
+int _old_apply_rule_utf16le (const u16 *rule, int rule_len, u16 in[RP_PASSWORD_SIZE], int in_len, u16 out[RP_PASSWORD_SIZE])
+{
+
+/*
+  printf("\nrules : %.16llx ", *(u64*)rule);
+  printf("len : %.2d ",rule_len);
+  printf("in : %s ", in);
+  printf("in_len : %.2d \n", in_len);
+  char mem[RP_PASSWORD_SIZE] = { 0 };
+
+  int pos_mem = -1;
+
+  if (in == NULL) return (RULE_RC_REJECT_ERROR);
+
+  if (out == NULL) return (RULE_RC_REJECT_ERROR);
+
+  if (in_len < 0 || in_len > RP_PASSWORD_SIZE) return (RULE_RC_REJECT_ERROR);
+
+  if (rule_len < 1) return (RULE_RC_REJECT_ERROR);
+
+  int out_len = in_len;
+  int mem_len = in_len;
+
+  memcpy (out, in, out_len);
+
+  char *rule_new = (char *) hcmalloc (rule_len);
+
+  #define HCFREE_AND_RETURN(x) { hcfree (rule_new); return (x); }
+
+  int rule_len_new = 0;
+
+  int rule_pos;
+
+  for (rule_pos = 0; rule_pos < rule_len; rule_pos++)
+  {
+    if (is_hex_notation (rule, rule_len, rule_pos))
+    {
+      const u8 c = hex_to_u8 ((const u8 *) &rule[rule_pos + 2]);
+
+      rule_pos += 3;
+
+      rule_new[rule_len_new] = c;
+
+      rule_len_new++;
+    }
+    else
+    {
+      rule_new[rule_len_new] = rule[rule_pos];
+
+      rule_len_new++;
+    }
+  }
+
+  for (rule_pos = 0; rule_pos < rule_len_new; rule_pos++)
+  {
+    int upos, upos2;
+    int ulen;
+
+    switch (rule_new[rule_pos])
+    {
+      case ' ':
+        break;
+
+      case RULE_OP_MANGLE_NOOP:
+        break;
+
+      case RULE_OP_MANGLE_LREST:
+        out_len = mangle_lrest (out, out_len);
+        break;
+
+      case RULE_OP_MANGLE_UREST:
+        out_len = mangle_urest (out, out_len);
+        break;
+
+      case RULE_OP_MANGLE_LREST_UFIRST:
+        out_len = mangle_lrest (out, out_len);
+        if (out_len) MANGLE_UPPER_AT (out, 0);
+        break;
+
+      case RULE_OP_MANGLE_UREST_LFIRST:
+        out_len = mangle_urest (out, out_len);
+        if (out_len) MANGLE_LOWER_AT (out, 0);
+        break;
+
+      case RULE_OP_MANGLE_TREST:
+        out_len = mangle_trest (out, out_len);
+        break;
+
+      case RULE_OP_MANGLE_TOGGLE_AT:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        if (upos < out_len) MANGLE_TOGGLE_AT (out, upos);
+        break;
+
+      case RULE_OP_MANGLE_TOGGLE_AT_SEP:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        NEXT_RULEPOS (rule_pos);
+        out_len = mangle_toggle_at_sep (out, out_len, rule_new[rule_pos], upos);
+        break;
+
+      case RULE_OP_MANGLE_REVERSE:
+        out_len = mangle_reverse (out, out_len);
+        break;
+
+      case RULE_OP_MANGLE_DUPEWORD:
+        out_len = mangle_double (out, out_len);
+        break;
+
+      case RULE_OP_MANGLE_DUPEWORD_TIMES:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, ulen);
+        out_len = mangle_double_times (out, out_len, ulen);
+        break;
+
+      case RULE_OP_MANGLE_REFLECT:
+        out_len = mangle_reflect (out, out_len);
+        break;
+
+      case RULE_OP_MANGLE_ROTATE_LEFT:
+        mangle_rotate_left (out, out_len);
+        break;
+
+      case RULE_OP_MANGLE_ROTATE_RIGHT:
+        mangle_rotate_right (out, out_len);
+        break;
+
+      case RULE_OP_MANGLE_APPEND:
+        NEXT_RULEPOS (rule_pos);
+        out_len = mangle_append (out, out_len, rule_new[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_PREPEND:
+        NEXT_RULEPOS (rule_pos);
+        out_len = mangle_prepend (out, out_len, rule_new[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_DELETE_FIRST:
+        out_len = mangle_delete_at (out, out_len, 0);
+        break;
+
+      case RULE_OP_MANGLE_DELETE_LAST:
+        out_len = mangle_delete_at (out, out_len, (out_len) ? out_len - 1 : 0);
+        break;
+
+      case RULE_OP_MANGLE_DELETE_AT:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        out_len = mangle_delete_at (out, out_len, upos);
+        break;
+
+      case RULE_OP_MANGLE_EXTRACT:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, ulen);
+        out_len = mangle_extract (out, out_len, upos, ulen);
+        break;
+
+      case RULE_OP_MANGLE_OMIT:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, ulen);
+        out_len = mangle_omit (out, out_len, upos, ulen);
+        break;
+
+      case RULE_OP_MANGLE_INSERT:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        NEXT_RULEPOS (rule_pos);
+        out_len = mangle_insert (out, out_len, upos, rule_new[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_OVERSTRIKE:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        NEXT_RULEPOS (rule_pos);
+        out_len = mangle_overstrike (out, out_len, upos, rule_new[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_TRUNCATE_AT:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        out_len = mangle_truncate_at (out, out_len, upos);
+        break;
+
+      case RULE_OP_MANGLE_REPLACE:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RULEPOS (rule_pos);
+        printf("p0 %.2x  p1 %.2x \n",rule_new[rule_pos - 2], rule_new[rule_pos] );
+        out_len = mangle_replace (out, out_len, rule_new[rule_pos - 2], rule_new[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_PURGECHAR:
+        NEXT_RULEPOS (rule_pos);
+        out_len = mangle_purgechar (out, out_len, rule_new[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_TOGGLECASE_REC:
+        /* todo0 /
+        break;
+
+      case RULE_OP_MANGLE_DUPECHAR_FIRST:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, ulen);
+        out_len = mangle_dupechar_at (out, out_len, 0, ulen);
+        break;
+
+      case RULE_OP_MANGLE_DUPECHAR_LAST:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, ulen);
+        out_len = mangle_dupechar_at (out, out_len, out_len - 1, ulen);
+        break;
+
+      case RULE_OP_MANGLE_DUPECHAR_ALL:
+        out_len = mangle_dupechar (out, out_len);
+        break;
+
+      case RULE_OP_MANGLE_DUPEBLOCK_FIRST:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, ulen);
+        out_len = mangle_dupeblock_prepend (out, out_len, ulen);
+        break;
+
+      case RULE_OP_MANGLE_DUPEBLOCK_LAST:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, ulen);
+        out_len = mangle_dupeblock_append (out, out_len, ulen);
+        break;
+
+      case RULE_OP_MANGLE_SWITCH_FIRST:
+        if (out_len >= 2) mangle_switch_at (out, out_len, 0, 1);
+        break;
+
+      case RULE_OP_MANGLE_SWITCH_LAST:
+        if (out_len >= 2) mangle_switch_at (out, out_len, out_len - 1, out_len - 2);
+        break;
+
+      case RULE_OP_MANGLE_SWITCH_AT:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos2);
+        out_len = mangle_switch_at_check (out, out_len, upos, upos2);
+        break;
+
+      case RULE_OP_MANGLE_CHR_SHIFTL:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        mangle_chr_shiftl (out, out_len, upos);
+        break;
+
+      case RULE_OP_MANGLE_CHR_SHIFTR:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        mangle_chr_shiftr (out, out_len, upos);
+        break;
+
+      case RULE_OP_MANGLE_CHR_INCR:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        mangle_chr_incr (out, out_len, upos);
+        break;
+
+      case RULE_OP_MANGLE_CHR_DECR:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        mangle_chr_decr (out, out_len, upos);
+        break;
+
+      case RULE_OP_MANGLE_REPLACE_NP1:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        if ((upos >= 0) && ((upos + 1) < out_len)) mangle_overstrike (out, out_len, upos, out[upos + 1]);
+        break;
+
+      case RULE_OP_MANGLE_REPLACE_NM1:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        if ((upos >= 1) && ((upos + 0) < out_len)) mangle_overstrike (out, out_len, upos, out[upos - 1]);
+        break;
+
+      case RULE_OP_MANGLE_TITLE_SEP:
+        NEXT_RULEPOS (rule_pos);
+        out_len = mangle_title_sep (out, out_len, rule_new[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_TITLE:
+        out_len = mangle_title_sep (out, out_len, ' ');
+        break;
+
+      case RULE_OP_MANGLE_EXTRACT_MEMORY:
+        if (mem_len < 1) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, ulen);
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos2);
+        if ((out_len = mangle_insert_multi (out, out_len, upos2, mem, mem_len, upos, ulen)) < 1) HCFREE_AND_RETURN (out_len);
+        break;
+
+      case RULE_OP_MANGLE_APPEND_MEMORY:
+        if (mem_len < 1) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        if ((out_len + mem_len) >= RP_PASSWORD_SIZE) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        memcpy (out + out_len, mem, mem_len);
+        out_len += mem_len;
+        break;
+
+      case RULE_OP_MANGLE_PREPEND_MEMORY:
+        if (mem_len < 1) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        if ((mem_len + out_len) >= RP_PASSWORD_SIZE) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        memcpy (mem + mem_len, out, out_len);
+        out_len += mem_len;
+        memcpy (out, mem, out_len);
+        break;
+
+      case RULE_OP_MEMORIZE_WORD:
+        memcpy (mem, out, out_len);
+        mem_len = out_len;
+        break;
+
+      case RULE_OP_REJECT_LESS:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        if (out_len > upos) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        break;
+
+      case RULE_OP_REJECT_GREATER:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        if (out_len < upos) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        break;
+
+      case RULE_OP_REJECT_EQUAL:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        if (out_len != upos) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        break;
+
+      case RULE_OP_REJECT_CONTAIN:
+        NEXT_RULEPOS (rule_pos);
+        if (strchr (out, rule_new[rule_pos]) != NULL) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        break;
+
+      case RULE_OP_REJECT_NOT_CONTAIN:
+        NEXT_RULEPOS (rule_pos);
+        {
+          const char *match = strchr (out, rule_new[rule_pos]);
+          if (match != NULL)
+          {
+            pos_mem = (int)(match - out);
+          }
+          else
+          {
+            HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+          }
+        }
+        break;
+
+      case RULE_OP_REJECT_EQUAL_FIRST:
+        NEXT_RULEPOS (rule_pos);
+        if (out[0] != rule_new[rule_pos]) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        break;
+
+      case RULE_OP_REJECT_EQUAL_LAST:
+        NEXT_RULEPOS (rule_pos);
+        if (out[out_len - 1] != rule_new[rule_pos]) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        break;
+
+      case RULE_OP_REJECT_EQUAL_AT:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        if ((upos + 1) > out_len) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        NEXT_RULEPOS (rule_pos);
+        if (out[upos] != rule_new[rule_pos]) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        break;
+
+      case RULE_OP_REJECT_CONTAINS:
+        NEXT_RULEPOS (rule_pos);
+        NEXT_RPTOI (rule_new, rule_pos, upos);
+        if ((upos + 1) > out_len) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        NEXT_RULEPOS (rule_pos);
+        int c; int cnt;
+        for (c = 0, cnt = 0; c < out_len && cnt < upos; c++)
+        {
+          if (out[c] == rule_new[rule_pos])
+          {
+            cnt++;
+            pos_mem = c;
+          }
+        }
+
+        if (cnt < upos) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        break;
+
+      case RULE_OP_REJECT_MEMORY:
+        if ((out_len == mem_len) && (memcmp (out, mem, out_len) == 0)) HCFREE_AND_RETURN (RULE_RC_REJECT_ERROR);
+        break;
+
+      case 0x00:
+        printf("zero char detected \n");
+        continue;
+      default:
+        //printf("rule error %s",  rule_new[rule_pos] );
+        HCFREE_AND_RETURN (RULE_RC_SYNTAX_ERROR);
+    }
+
+  }
+
+  memset (out + out_len, 0, RP_PASSWORD_SIZE - out_len);
+
+  HCFREE_AND_RETURN (out_len);
+
+  #undef HCFREE_AND_RETURN
+  */
+}
+
+
 int run_rule_engine (const int rule_len, const char *rule_buf)
 {
   if (rule_len == 0) return 0;

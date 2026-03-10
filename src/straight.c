@@ -333,7 +333,8 @@ int straight_ctx_init (hashcat_ctx_t *hashcat_ctx)
       EVENT (EVENT_RULESFILES_PARSE_PRE);
 
       if (kernel_rules_load (hashcat_ctx, &straight_ctx->kernel_rules_buf, &straight_ctx->kernel_rules_cnt) == -1) return -1;
-
+      //event_log_warning (hashcat_ctx, "nb kernel rules : %.2d" ,straight_ctx->kernel_rules_cnt);
+      //event_log_warning (hashcat_ctx, "1st kernel rules 32 : %.8X , 64 : %.16llX" ,straight_ctx->kernel_rules_buf->cmds[0], straight_ctx->kernel_rules_buf->cmds[0]);
       EVENT (EVENT_RULESFILES_PARSE_POST);
     }
     else if (user_options->rp_gen)

@@ -254,6 +254,21 @@ int generate_random_rule (char rule_buf[RP_RULE_SIZE], const u32 rp_gen_func_min
 #define GET_P0_CONV(rule)      INCR_POS; rule_buf[rule_pos] = (char) conv_itoc (((rule)->cmds[rule_cnt] >>  8) & 0xff)
 #define GET_P1_CONV(rule)      INCR_POS; rule_buf[rule_pos] = (char) conv_itoc (((rule)->cmds[rule_cnt] >> 16) & 0xff)
 
+
+#define INCR_POS_UTF16LE if (++rule_pos == rule_len) return (-1)
+
+#define SET_NAME_UTF16LE(rule,val) (rule)->cmds[rule_cnt]  = ((val) & 0xffff) <<  0
+#define SET_P0_UTF16LE(rule,val)   do { INCR_POS_UTF16LE;  (rule)->cmds[rule_cnt] |= ((u64)(val) & 0xffff) <<  16;  } while(0)
+#define SET_P1_UTF16LE(rule,val)   do { INCR_POS_UTF16LE;  (rule)->cmds[rule_cnt] |= ((u64)(val) & 0xffff) <<  32;  } while(0)
+//#define GET_NAME_UTF16LE(rule)     rule_cmd = (((rule)->cmds[rule_cnt] >>  0) & 0xffff)
+//#define GET_P0_UTF16LE(rule)       INCR_POS_UTF16LE; rule_buf[rule_pos] = (((rule)->cmds[rule_cnt] >>  16) & 0xffff)
+//#define GET_P1_UTF16LE(rule)       INCR_POS_UTF16LE; rule_buf[rule_pos] = (((rule)->cmds[rule_cnt] >> 12) & 0xffff)
+
+#define SET_P0_CONV_UTF16LE(rule,val)  INCR_POS_UTF16LE; (rule)->cmds[rule_cnt] |= ((conv_ctoi (val)) & 0xffff) <<  16
+#define SET_P1_CONV_UTF16LE(rule,val)  INCR_POS_UTF16LE; (rule)->cmds[rule_cnt] |= ((conv_ctoi (val)) & 0xffff) <<  32
+//#define GET_P0_CONV_UTF16LE(rule)      INCR_POS_UTF16LE; rule_buf[rule_pos] = (char) conv_itoc (((rule)->cmds[rule_cnt] >>  16) & 0xffff)
+//#define GET_P1_CONV_UTF16LE(rule)      INCR_POS_UTF16LE; rule_buf[rule_pos] = (char) conv_itoc (((rule)->cmds[rule_cnt] >> 12) & 0xffff)
+
 bool is_hex_notation (const char *rule_buf, u32 rule_len, u32 rule_pos)
 {
   if ((rule_pos + 4) > rule_len) return false;
@@ -588,6 +603,234 @@ int cpu_rule_to_kernel_rule (char *rule_buf, u32 rule_len, kernel_rule_t *rule)
   return 0;
 }
 
+int cpu_rule_to_kernel_rule_utf16le (u16 *rule_buf, u32 rule_len, kernel_rule_t *rule)
+{
+  u32 rule_pos;
+  u32 rule_cnt;
+
+  for (rule_pos = 0, rule_cnt = 0; rule_pos < rule_len && rule_cnt < MAX_KERNEL_RULES; rule_pos++, rule_cnt++)
+  {
+    switch (rule_buf[rule_pos])
+    {
+      case ' ':
+        rule_cnt--;
+        break;
+
+      case RULE_OP_MANGLE_NOOP:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_LREST:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_UREST:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_LREST_UFIRST:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_UREST_LFIRST:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_TREST:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_TOGGLE_AT:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_REVERSE:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_DUPEWORD:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_DUPEWORD_TIMES:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_REFLECT:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_ROTATE_LEFT:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_ROTATE_RIGHT:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_APPEND:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        SET_P0_UTF16LE   (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_PREPEND:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        SET_P0_UTF16LE   (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_DELETE_FIRST:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_DELETE_LAST:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_DELETE_AT:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_EXTRACT:
+        SET_NAME_UTF16LE   (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        SET_P1_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_OMIT:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        SET_P1_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_INSERT:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        SET_P1_UTF16LE      (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_OVERSTRIKE:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        SET_P1_UTF16LE      (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_TRUNCATE_AT:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_REPLACE:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        SET_P0_UTF16LE   (rule, rule_buf[rule_pos]);
+        SET_P1_UTF16LE   (rule, rule_buf[rule_pos]);
+
+
+        break;
+
+      case RULE_OP_MANGLE_PURGECHAR:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        SET_P0_UTF16LE   (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_TOGGLECASE_REC:
+        return -1;
+
+      case RULE_OP_MANGLE_DUPECHAR_FIRST:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_DUPECHAR_LAST:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_DUPECHAR_ALL:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_SWITCH_FIRST:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_SWITCH_LAST:
+        SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_SWITCH_AT:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        SET_P1_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_CHR_SHIFTL:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_CHR_SHIFTR:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_CHR_INCR:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_CHR_DECR:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_REPLACE_NP1:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_REPLACE_NM1:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_DUPEBLOCK_FIRST:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_DUPEBLOCK_LAST:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_TITLE:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_TITLE_SEP:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_UTF16LE      (rule, rule_buf[rule_pos]);
+        break;
+
+      case RULE_OP_MANGLE_TOGGLE_AT_SEP:
+        SET_NAME_UTF16LE    (rule, rule_buf[rule_pos]);
+        SET_P0_CONV_UTF16LE (rule, rule_buf[rule_pos]);
+        SET_P1_UTF16LE     (rule, rule_buf[rule_pos]);
+        break;
+
+      default:
+        return -1;
+    }
+  }
+
+  if (rule_pos < rule_len) return -1;
+
+  return 0;
+}
+
 int kernel_rule_to_cpu_rule (char *rule_buf, kernel_rule_t *rule)
 {
   u32 rule_cnt;
@@ -882,6 +1125,9 @@ int kernel_rules_load (hashcat_ctx_t *hashcat_ctx, kernel_rule_t **out_buf, u32 
 {
   const user_options_t *user_options = hashcat_ctx->user_options;
 
+  iconv_t iconv_ctx = iconv_open (user_options->encoding_to, user_options->encoding_from);
+  char  iconv_tmp[HCBUFSIZ_TINY] = { 0 };
+
   /**
    * load rules
    */
@@ -970,6 +1216,34 @@ int kernel_rules_load (hashcat_ctx_t *hashcat_ctx, kernel_rule_t **out_buf, u32 
         }
       }
 
+      char *line_buf_new = rule_buf;
+
+      if(user_options->hash_mode & 0x2){
+        char  *iconv_ptr = iconv_tmp;
+        size_t iconv_sz  = HCBUFSIZ_TINY;
+        iconv (iconv_ctx, &line_buf_new, &rule_len, &iconv_ptr, &iconv_sz);
+        line_buf_new = iconv_tmp;
+
+#if defined (_POSIX)
+        rule_len = 2048+rule_len;
+#endif // _POSIX
+#if defined (_APPLE)
+        rule_len = 2048+rule_len;
+#endif // _POSIX
+#if defined (_WIN)
+        rule_len = (HCBUFSIZ_TINY - iconv_sz)/2;
+#endif // _WIN
+
+        if (cpu_rule_to_kernel_rule_utf16le ((u16*)line_buf_new, rule_len, &kernel_rules_buf[kernel_rules_cnt]) == -1)
+        {
+          event_log_warning (hashcat_ctx, "Cannot convert rule for use on OpenCL device in file %s on line %u: %s", rp_file, rule_line, rule_buf);
+
+          memset (&kernel_rules_buf[kernel_rules_cnt], 0, sizeof (kernel_rule_t)); // needs to be cleared otherwise we could have some remaining data
+
+          continue;
+        }
+
+      }else{
       char in[RP_PASSWORD_SIZE];
       char out[RP_PASSWORD_SIZE];
 
@@ -996,6 +1270,7 @@ int kernel_rules_load (hashcat_ctx_t *hashcat_ctx, kernel_rule_t **out_buf, u32 
         memset (&kernel_rules_buf[kernel_rules_cnt], 0, sizeof (kernel_rule_t)); // needs to be cleared otherwise we could have some remaining data
 
         continue;
+      }
       }
 
       if (kernel_rules_cnt == (u32) -1)
@@ -1129,7 +1404,9 @@ int kernel_rules_load (hashcat_ctx_t *hashcat_ctx, kernel_rule_t **out_buf, u32 
 
   *out_cnt = kernel_rules_cnt;
   *out_buf = kernel_rules_buf;
-
+  //event_log_warning (hashcat_ctx, "out_buff cmd32 : %.16llX ", (*out_buf)->cmds[0] );
+  //event_log_warning (hashcat_ctx, "out_buff cmd64 : %.16llX ", (*out_buf)->cmds[0] );
+  iconv_close (iconv_ctx);
   return 0;
 }
 

@@ -2,6 +2,8 @@
  * Author......: See docs/credits.txt
  * License.....: MIT
  */
+#include <wchar.h>
+#include <locale.h>
 
 #include "common.h"
 #include "types.h"
@@ -17,6 +19,11 @@
 #include "locking.h"
 #include "thread.h"
 #include "outfile.h"
+
+
+#ifndef _O_U16TEXT
+  #define _O_U16TEXT 0x20000
+#endif
 
 u32 outfile_format_parse (const char *format_string)
 {
@@ -171,8 +178,8 @@ int build_plain (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, pl
           {
             plain_buf[i] = pw.i[i];
           }
-
-          plain_len = apply_rules_optimized (straight_ctx->kernel_rules_buf[off].cmds, &plain_buf[0], &plain_buf[4], pw.pw_len);
+          if(user_options->hash_mode & 0x2) plain_len = apply_rules_optimized_utf16le (straight_ctx->kernel_rules_buf[off].cmds, &plain_buf[0], &plain_buf[4], &plain_buf[8], &plain_buf[12], pw.pw_len);
+          else plain_len = apply_rules_optimized ((u32*)(straight_ctx->kernel_rules_buf[off].cmds), &plain_buf[0], &plain_buf[4], pw.pw_len);
         }
       }
       else
@@ -181,8 +188,8 @@ int build_plain (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, pl
         {
           plain_buf[i] = pw.i[i];
         }
-
-        plain_len = apply_rules (straight_ctx->kernel_rules_buf[off].cmds, plain_buf, pw.pw_len);
+        if(user_options->hash_mode & 0x2) plain_len = apply_rules_utf16le (straight_ctx->kernel_rules_buf[off].cmds, plain_buf, pw.pw_len);
+        else plain_len = apply_rules ((u32*)straight_ctx->kernel_rules_buf[off].cmds, plain_buf, pw.pw_len);
       }
     }
     else if (user_options->attack_mode == ATTACK_MODE_COMBI)
@@ -581,6 +588,9 @@ int outfile_write (hashcat_ctx_t *hashcat_ctx, const char *out_buf, const int ou
   outfile_ctx_t        *outfile_ctx  = hashcat_ctx->outfile_ctx;
   status_ctx_t         *status_ctx   = hashcat_ctx->status_ctx;
 
+  iconv_t iconv_ctx = iconv_open (user_options->encoding_from, user_options->encoding_to);
+  char  iconv_tmp[HCBUFSIZ_TINY] = { 0 };
+
   int tmp_len = 0;
 
   if (outfile_ctx->outfile_json == true)
@@ -731,12 +741,29 @@ int outfile_write (hashcat_ctx_t *hashcat_ctx, const char *out_buf, const int ou
         if (user_options->outfile_autohex == true)
         {
           const bool always_ascii = (hashconfig->opts_type & OPTS_TYPE_PT_ALWAYS_ASCII) ? true : false;
-
-          convert_to_hex = need_hexify (plain_ptr, plain_len, hashconfig->separator, always_ascii);
+          if(!(hashcat_ctx->user_options->hash_mode & 0x2)) convert_to_hex = need_hexify (plain_ptr, plain_len, hashconfig->separator, always_ascii);
         }
       }
 
-      if (convert_to_hex)
+       if(user_options->hash_mode & 0x2){
+
+        char* line_buf_new = NULL;
+        line_buf_new = (char *) malloc( HCBUFSIZ_TINY * sizeof(char) );
+        memcpy (line_buf_new , plain_ptr, plain_len);
+
+        char  *iconv_ptr = iconv_tmp;
+        size_t iconv_sz  = HCBUFSIZ_TINY;
+        iconv (iconv_ctx, &line_buf_new, &plain_len, &iconv_ptr, &iconv_sz);
+
+
+        line_buf_new = iconv_tmp;
+        size_t len = HCBUFSIZ_TINY - iconv_sz;
+
+        memcpy (tmp_buf + tmp_len, line_buf_new, len);
+
+        tmp_len += len;
+
+      }else if (convert_to_hex)
       {
         tmp_buf[tmp_len++] = '$';
         tmp_buf[tmp_len++] = 'H';
@@ -797,5 +824,6 @@ int outfile_write (hashcat_ctx_t *hashcat_ctx, const char *out_buf, const int ou
     }
   }
 
+  iconv_close (iconv_ctx);
   return tmp_len;
 }

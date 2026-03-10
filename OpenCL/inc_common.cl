@@ -1611,6 +1611,14 @@ DECLSPEC u32 hc_bytealign_S (const u32 a, const u32 b, const int c)
   return (c_mod_4 == 0) ? b : __builtin_amdgcn_alignbyte (b, a, 4 - c_mod_4);
 }
 
+DECLSPEC u32 hc_2bytesalign_S (const u32 a, const u32 b, const int c)
+{
+  // TODO
+  const int c_mod_4 = c & 3;
+
+  return (c_mod_4 == 0) ? b : __builtin_amdgcn_alignbyte (b, a, 4 - c_mod_4);
+}
+
 DECLSPEC u32x hc_byte_perm (const u32x a, const u32x b, const int c)
 {
   u32x r = 0;
@@ -1933,6 +1941,17 @@ DECLSPEC u32 hc_bytealign_S (const u32 a, const u32 b, const int c)
 
   return r;
 }
+
+DECLSPEC u32 hc_2bytesalign_S (const u32 a, const u32 b, const int c)
+{
+  //TODO
+  const int c_mod_4 = c & 3;
+
+  const u32 r = hc_funnelshift_l (a, b, c_mod_4 * 8);
+
+  return r;
+}
+
 #else
 DECLSPEC u32x hc_bytealign_be (const u32x a, const u32x b, const int c)
 {
@@ -1973,6 +1992,19 @@ DECLSPEC u32 hc_bytealign_S (const u32 a, const u32 b, const int c)
 
   return r;
 }
+
+DECLSPEC u32 hc_2bytesalign_S (const u32 a, const u32 b, const int c)
+{
+  // TODO
+  const int c_mod_4 = c & 3;
+
+  const int c_minus_4 = 4 - c_mod_4;
+
+  const u32 r = hc_byte_perm_S (a, b, (0x76543210 >> (c_minus_4 * 4)) & 0xffff);
+
+  return r;
+}
+
 #endif
 
 DECLSPEC u32x hc_add3 (const u32x a, const u32x b, const u32x c)
@@ -2132,6 +2164,16 @@ DECLSPEC u32 hc_bytealign_S (const u32 a, const u32 b, const int c)
   else if (cm == 2) { r = (a >> 16) | (b << 16); }
   else if (cm == 3) { r = (a >>  8) | (b << 24); }
 
+  return r;
+}
+
+DECLSPEC u32 hc_2bytesalign_S (const u32 a, const u32 b, const int c)
+{
+  u32 r = 0;
+  const int cm = c & 1;
+
+       if (cm == 0) { r = b;                     }
+  else if (cm == 1) { r = (a >> 16) | (b <<  16);}
   return r;
 }
 
@@ -3432,6 +3474,125 @@ DECLSPEC void make_utf16le (PRIVATE_AS const u32x *in, PRIVATE_AS u32x *out1, PR
 
   #endif
 }
+
+
+DECLSPEC u32x make_real_utf16le (PRIVATE_AS const u32x *in, PRIVATE_AS u32x *out1, PRIVATE_AS u32x *out2)
+{
+  #if defined IS_NV
+
+  int in_pos=0;
+  int out_pos=0;
+  int i=0,n;
+  int j=0;
+  u32x out,tmp,Y,out_len=0,first;
+
+  out2[0] = in[0];
+  out2[1] = in[1];
+  out2[2] = in[2];
+  out2[3] = in[3];
+
+  for(in_pos=0;in_pos<4 && out_pos<4;){
+
+    tmp = (out2[in_pos] >> (i*8));
+    first = tmp&0xFF;
+    n = (first > 0x80)?2:1;
+    n += (first > 0xDF)?1:0;
+    Y=tmp<<((4-n)*8);
+    out1[out_pos] &= (j%2)?0x0000FFFF:0xFFFF0000;
+    out1[out_pos] |= ((Y&(first==0x80?0xff000000:0x7f000000))>>8| (Y&0x003F0000)<<6 | (Y&0x00000F00)<<20)>>((j%2)?0:16);
+    out_len += (first != 0x80 && first != 0x00)?1:0;
+    i+= (n<2)?1:2;
+    i+= (n==3)?1:0;
+    in_pos += (i>3)?1:0;
+    out_pos += (j%2)?1:0;
+    i = (i>3)?0:i;
+    j++;
+
+  }
+  out_pos = 0;
+  for(;in_pos<4;){
+
+    tmp = (out2[in_pos] >> (i*8));
+    first = tmp&0xFF;
+    n =  (first > 0x80)?2:1;
+    n += (first > 0xDF)?1:0;
+    Y=tmp<<((4-n)*8);
+    out2[out_pos] &= (j%2)?0x0000FFFF:0xFFFF0000;
+    out2[out_pos] |= ((Y&(first==0x80?0xff000000:0x7f000000))>>8| (Y&0x003F0000)<<6 | (Y&0x00000F00)<<20)>>((j%2)?0:16);
+    out_len += (first != 0x80 && first != 0x00)?1:0;
+    i+= (n<2)?1:2;
+    i+= (n==3)?1:0;
+    in_pos += (i>3)?1:0;
+    out_pos += (j%2)?1:0;
+    i = (i>3)?0:i;
+    j++;
+
+  }
+
+  return out_len;
+  #elif (defined IS_AMD || defined IS_HIP) && HAS_VPERM == 1
+
+  out2[3] = hc_byte_perm (in[3], 0, 0x07030702);
+  out2[2] = hc_byte_perm (in[3], 0, 0x07010700);
+  out2[1] = hc_byte_perm (in[2], 0, 0x07030702);
+  out2[0] = hc_byte_perm (in[2], 0, 0x07010700);
+  out1[3] = hc_byte_perm (in[1], 0, 0x07030702);
+  out1[2] = hc_byte_perm (in[1], 0, 0x07010700);
+  out1[1] = hc_byte_perm (in[0], 0, 0x07030702);
+  out1[0] = hc_byte_perm (in[0], 0, 0x07010700);
+
+  #else
+  /*
+  int in_pos=0;
+  int out_pos=0;
+  int4 i=0,n;
+  int j=0;
+  u32x out,tmp,Y,out_len=0,first;
+
+  out2[0] = in[0];
+  out2[1] = in[1];
+  out2[2] = in[2];
+  out2[3] = in[3];
+
+  for(in_pos=0;in_pos<4 && out_pos<4;){
+    tmp = (out2[in_pos] >> (i*8));
+    first = tmp&0xFF;
+    n = (first > 0x80)?2:1;
+    n += (first > 0xDF)?1:0;
+    Y=tmp<<((4-n)*8);
+    out1[out_pos] &= (j%2)?0x0000FFFF:0xFFFF0000;
+    out1[out_pos] |= ((Y&(first==0x80?0xff000000:0x7f000000))>>8| (Y&0x003F0000)<<6 | (Y&0x00000F00)<<20)>>((j%2)?0:16);
+    out_len += (first.s0 != 0x80 && first.s0 != 0x00)?1:0;
+    i+= (n<2)?1:2;
+    i+= (n==3)?1:0;
+    in_pos += (i.s0>3)?1:0;
+    out_pos += (j%2)?1:0;
+    i = (i>3)?0:i;
+    j++;
+  }
+  out_pos = 0;
+  for(;in_pos<4;){
+    tmp = (out2[in_pos] >> (i*8));
+    first = tmp&0xFF;
+    n =  (first > 0x80)?2:1;
+    n += (first > 0xDF)?1:0;
+    Y=tmp<<((4-n)*8);
+    out2[out_pos] &= (j%2)?0x0000FFFF:0xFFFF0000;
+    out2[out_pos] |= ((Y&(first == 0x80?0xff000000:0x7f000000))>>8| (Y&0x003F0000)<<6 | (Y&0x00000F00)<<20)>>((j%2)?0:16);
+    out_len += (first.s0 != 0x80 && first.s0 != 0x00)?1:0;
+    i+= (n<2)?1:2;
+    i+= (n==3)?1:0;
+    in_pos += (i.s0>3)?1:0;
+    out_pos += (j%2)?1:0;
+    i = (i>3)?0:i;
+    j++;
+  }
+
+  return out_len;*/
+  #endif
+}
+
+
 
 DECLSPEC void make_utf16leN (PRIVATE_AS const u32x *in, PRIVATE_AS u32x *out1, PRIVATE_AS u32x *out2)
 {
@@ -21470,6 +21631,17 @@ DECLSPEC void set_mark_1x4_S (PRIVATE_AS u32 *v, const u32 offset)
 {
   const u32 c = (offset & 15) / 4;
   const u32 r = 0xff << ((offset & 3) * 8);
+
+  v[0] = (c == 0) ? r : 0;
+  v[1] = (c == 1) ? r : 0;
+  v[2] = (c == 2) ? r : 0;
+  v[3] = (c == 3) ? r : 0;
+}
+
+DECLSPEC void set_mark_1x4_S_16 (PRIVATE_AS u32 *v, const u32 offset)
+{
+  const u32 c = (offset & 15) / 2;
+  const u32 r = 0xffff << ((offset & 1) * 16);
 
   v[0] = (c == 0) ? r : 0;
   v[1] = (c == 1) ? r : 0;

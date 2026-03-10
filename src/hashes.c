@@ -327,9 +327,12 @@ int check_hash (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, pla
   const hashconfig_t    *hashconfig    = hashcat_ctx->hashconfig;
   const loopback_ctx_t  *loopback_ctx  = hashcat_ctx->loopback_ctx;
   const module_ctx_t    *module_ctx    = hashcat_ctx->module_ctx;
-
+  const user_options_t  *user_options  = hashcat_ctx->user_options;
   const u32 salt_pos    = plain->salt_pos;
   const u32 digest_pos  = plain->digest_pos;  // relative
+
+  iconv_t iconv_ctx = iconv_open (user_options->encoding_to, user_options->encoding_from);
+  char  iconv_tmp[HCBUFSIZ_TINY] = { 0 };
 
   void *tmps = NULL;
 
@@ -477,9 +480,32 @@ int check_hash (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, pla
 
   tmp_buf[0] = 0;
 
+  //event_log_warning (hashcat_ctx, "Out 1\n");
   const int tmp_len = outfile_write (hashcat_ctx, (char *) out_buf, out_len, plain_ptr, plain_len, crackpos, NULL, 0, true, (char *) tmp_buf);
 
-  EVENT_DATA (EVENT_CRACKER_HASH_CRACKED, tmp_buf, tmp_len);
+#if defined (_POSIX)
+
+    printf("%s\n", tmp_buf);
+
+#endif // _POSIX
+#if defined (_WIN)
+
+  char* line_buf_new = NULL;
+  line_buf_new = (char *) malloc( HCBUFSIZ_TINY * sizeof(char) );
+  memcpy (line_buf_new , tmp_buf, tmp_len);
+  char  *iconv_ptr = iconv_tmp;
+  size_t iconv_sz  = HCBUFSIZ_TINY;
+  iconv (iconv_ctx, &line_buf_new, &tmp_len, &iconv_ptr, &iconv_sz);
+  line_buf_new = iconv_tmp;
+
+  //size_t len = HCBUFSIZ_TINY - iconv_sz;
+  _setmode(_fileno(stdout), _O_U16TEXT);
+  wprintf(L"%ls\n", (wchar_t *)line_buf_new);
+  _setmode(_fileno(stdout), _O_TEXT);
+
+#endif // _WIN
+
+  //EVENT_DATA (EVENT_CRACKER_HASH_CRACKED, tmp_buf, tmp_len);
 
   outfile_write_close (hashcat_ctx);
 
@@ -543,6 +569,7 @@ int check_hash (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, pla
     );
 
     out_buf[out_len] = 0;
+    iconv_close (iconv_ctx);
   }
 
   potfile_write_append (hashcat_ctx, (char *) out_buf, out_len, plain_ptr, plain_len);

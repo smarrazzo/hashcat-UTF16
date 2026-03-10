@@ -12,7 +12,7 @@
 #define RULE_RC_REJECT_ERROR -2
 
 int _old_apply_rule (const char *rule, int rule_len, char in[RP_PASSWORD_SIZE], int in_len, char out[RP_PASSWORD_SIZE]);
-
+int _old_apply_rule_utf16le (const u16 *rule, int rule_len, u16 in[RP_PASSWORD_SIZE], int in_len, u16 out[RP_PASSWORD_SIZE]);
 int run_rule_engine (const int rule_len, const char *rule_buf);
 
 #endif // HC_RP_CPU_H

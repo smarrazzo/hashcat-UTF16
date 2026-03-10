@@ -3306,13 +3306,13 @@ DECLSPEC u32 apply_rule_optimized (const u32 name, const u32 p0, const u32 p1, P
 }
 
 //DECLSPEC u32 apply_rules_optimized (PRIVATE_AS const u32 *cmds, PRIVATE_AS u32 *buf0, PRIVATE_AS u32 *buf1, const u32 len)
-DECLSPEC u32 apply_rules_optimized (CONSTANT_AS const u32 *cmds, PRIVATE_AS u32 *buf0, PRIVATE_AS u32 *buf1, const u32 len)
+DECLSPEC DECLSPEC u32 apply_rules_optimized (CONSTANT_AS const u64 *cmds, PRIVATE_AS u32 *buf0, PRIVATE_AS u32 *buf1, const u32 len)
 {
   u32 out_len = len;
 
   for (u32 i = 0; cmds[i] != 0; i++)
   {
-    const u32 cmd = cmds[i];
+    const u32 cmd = (u32)(cmds[i]);
 
     const u32 name = (cmd >>  0) & 0xff;
     const u32 p0   = (cmd >>  8) & 0xff;

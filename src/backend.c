@@ -4114,6 +4114,15 @@ int run_cracker (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, co
     if (iconv_ctx == (iconv_t) -1) return -1;
   }
 
+  if (user_options->hash_mode & 0x2)
+  {
+    iconv_enabled = true;
+
+    iconv_ctx = iconv_open (user_options->encoding_to, user_options->encoding_from);
+
+    if (iconv_ctx == (iconv_t) -1) return -1;
+  }
+
   // find highest password length, this is for optimization stuff
 
   u32 highest_pw_len = 0;

@@ -277,6 +277,7 @@ DECLSPEC u64  hc_swap64_S (const u64  v);
 
 DECLSPEC u32x hc_bytealign      (const u32x a, const u32x b, const int  c);
 DECLSPEC u32  hc_bytealign_S    (const u32  a, const u32  b, const int  c);
+DECLSPEC u32  hc_2bytesalign_S  (const u32  a, const u32  b, const int  c);
 DECLSPEC u32x hc_bytealign_be   (const u32x a, const u32x b, const int  c);
 DECLSPEC u32  hc_bytealign_be_S (const u32  a, const u32  b, const int  c);
 DECLSPEC u32x hc_byte_perm      (const u32x a, const u32x b, const int  c);
@@ -335,9 +336,15 @@ DECLSPEC void make_utf16be (PRIVATE_AS const u32x *in, PRIVATE_AS u32x *out1, PR
 DECLSPEC void make_utf16beN (PRIVATE_AS const u32x *in, PRIVATE_AS u32x *out1, PRIVATE_AS u32x *out2);
 DECLSPEC void make_utf16beN_S (PRIVATE_AS const u32 *in, PRIVATE_AS u32 *out1, PRIVATE_AS u32 *out2);
 DECLSPEC void make_utf16le (PRIVATE_AS const u32x *in, PRIVATE_AS u32x *out1, PRIVATE_AS u32x *out2);
+
+DECLSPEC u32x make_real_utf16le (PRIVATE_AS const u32x *in, PRIVATE_AS u32x *out1, PRIVATE_AS u32x *out2);
+
 DECLSPEC void make_utf16leN (PRIVATE_AS const u32x *in, PRIVATE_AS u32x *out1, PRIVATE_AS u32x *out2);
 DECLSPEC void undo_utf16be (PRIVATE_AS const u32x *in1, PRIVATE_AS const u32x *in2, PRIVATE_AS u32x *out);
 DECLSPEC void undo_utf16le (PRIVATE_AS const u32x *in1, PRIVATE_AS const u32x *in2, PRIVATE_AS u32x *out);
+
+DECLSPEC void undo_real_utf16le (PRIVATE_AS const u32x *in1, PRIVATE_AS const u32x *in2, PRIVATE_AS u32x *out);
+
 DECLSPEC void set_mark_1x4 (PRIVATE_AS u32 *v, const u32 offset);
 DECLSPEC void append_helper_1x4 (PRIVATE_AS u32x *r, const u32 v, PRIVATE_AS const u32 *m);
 DECLSPEC void append_0x80_1x4 (PRIVATE_AS u32x *w0, const u32 offset);
