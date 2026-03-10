@@ -1473,6 +1473,69 @@ DECLSPEC u64 hc_swap64_S (const u64 v)
   return r;
 }
 
+DECLSPEC u64 hc_swap64_S2 (const u64 v) // TO CHECK
+{
+  u64 r;
+
+  #ifdef HC_CPU_OPENCL_EMU_H
+  r = byte_swap_64 (v);
+  #else
+  #if   (defined IS_AMD || defined IS_HIP) && HAS_VPERM == 1
+  printf("swap OK 1 \n ");
+  const u32 m = 0x01000302;
+
+  const u32 v0 = h32_from_64_S (v);
+  const u32 v1 = l32_from_64_S (v);
+
+  u32 t0;
+  u32 t1;
+
+  __asm__ __volatile__ ("V_PERM_B32 %0, 0, %1, %2;" : "=v"(t0) : "v"(v0), "v"(m));
+  __asm__ __volatile__ ("V_PERM_B32 %0, 0, %1, %2;" : "=v"(t1) : "v"(v1), "v"(m));
+
+  r = hl32_to_64_S (t1, t0);
+  #elif defined IS_NV  && HAS_PRMT  == 1
+  u32 il;
+  u32 ir;
+
+  asm volatile ("mov.b64 {%0, %1}, %2;" : "=r"(il), "=r"(ir) : "l"(v));
+
+  u32 tl;
+  u32 tr;
+
+  asm volatile ("prmt.b32 %0, %1, 0, 0x1032;" : "=r"(tl) : "r"(il));
+  asm volatile ("prmt.b32 %0, %1, 0, 0x1032;" : "=r"(tr) : "r"(ir));
+
+  asm volatile ("mov.b64 %0, {%1, %2};" : "=l"(r) : "r"(tr), "r"(tl));
+   
+  //printf("v : %.16llx  il : %.8x  ir : %.8x  tl : %.8x  tr : %.8x  r : %.16llx \n",v,il,ir,tl,tr,r);
+  #elif defined IS_METAL
+  printf("swap OK 3 \n ");
+  const u32 v0 = h32_from_64_S (v);
+  const u32 v1 = l32_from_64_S (v);
+
+  u32 t0 = hc_swap32_S (v0);
+  u32 t1 = hc_swap32_S (v1);
+
+  r = hl32_to_64_S (t1, t0);
+
+  #else
+
+  #ifdef USE_SWIZZLE
+  printf("swap OK 4 \n ");
+  r = as_ulong (as_uchar8 (v).s76543210);
+  #else
+  r = ((v & (u64) 0xffff000000000000UL) >> 48)
+    | ((v & (u64) 0x0000ffff00000000UL) >> 16)
+    | ((v & (u64) 0x00000000ffff0000UL) << 16)
+    | ((v & (u64) 0x000000000000ffffUL) << 48);
+  #endif
+  #endif
+  #endif
+
+  return r;
+}
+
 #if (defined IS_AMD || defined IS_HIP)
 
 DECLSPEC u32x hc_bfe (const u32x a, const u32x b, const u32x c)
@@ -1515,6 +1578,16 @@ DECLSPEC u32x hc_bfe (const u32x a, const u32x b, const u32x c)
 }
 
 DECLSPEC u32 hc_bfe_S (const u32 a, const u32 b, const u32 c)
+{
+  return __builtin_amdgcn_ubfe (a, b, c);
+}
+
+DECLSPEC u64 hc_bfe_S64 (const u64 a, const u64 b, const u64 c) // TODO
+{
+  return __builtin_amdgcn_ubfe (a, b, c);
+}
+
+DECLSPEC u64 hc_bfi_S64 (const u64 a, const u64 b, const u64 c) // TODO
 {
   return __builtin_amdgcn_ubfe (a, b, c);
 }
@@ -1611,6 +1684,15 @@ DECLSPEC u32 hc_bytealign_S (const u32 a, const u32 b, const int c)
   return (c_mod_4 == 0) ? b : __builtin_amdgcn_alignbyte (b, a, 4 - c_mod_4);
 }
 
+
+DECLSPEC u64 hc_bytealign_S64 (const u64 a, const u64 b, const int c) // TODO
+{
+  const int c_mod_4 = c & 3;
+
+  return (c_mod_4 == 0) ? b : __builtin_amdgcn_alignbyte (b, a, 4 - c_mod_4);
+}
+
+
 DECLSPEC u32 hc_2bytesalign_S (const u32 a, const u32 b, const int c)
 {
   // TODO
@@ -1659,6 +1741,11 @@ DECLSPEC u32x hc_byte_perm (const u32x a, const u32x b, const int c)
 }
 
 DECLSPEC u32 hc_byte_perm_S (const u32 a, const u32 b, const int c)
+{
+  return __builtin_amdgcn_perm (b, a, c);
+}
+
+DECLSPEC u64 hc_byte_perm_S64 (const u64 a, const u64 b, const int c) // TODO
 {
   return __builtin_amdgcn_perm (b, a, c);
 }
@@ -1793,6 +1880,32 @@ DECLSPEC u32 hc_byte_perm_S (const u32 a, const u32 b, const int c)
   return r;
 }
 
+DECLSPEC u64 hc_byte_perm_S64 (const u64 a, const u64 b, const int c) :: todo
+{
+  u64 r = 0;
+  u32 rl,rh;
+  u32 al,ah;
+  u32 bl,bh;
+
+  asm volatile ("mov.b64 {%0, %1}, %2;" : "=r"(al), "=r"(ah) : "l"(a));
+  asm volatile ("mov.b64 {%0, %1}, %2;" : "=r"(bl), "=r"(bh) : "l"(b));
+
+  u32 ll = (c == 3)? al:ah;
+  u32 lh = (c == 1)? bl:ah;
+  u32 hl = (c == 3)? ah:bl;
+  u32 hh = (c == 1)? bh:bl;
+
+  u32 cc = (c == 2)? 0x3210:0x5432; 
+
+  asm volatile ("prmt.b32 %0, %1, %2, %3;" : "=r"(rl) : "r"(ll), "r"(lh), "r"(cc));
+  asm volatile ("prmt.b32 %0, %1, %2, %3;" : "=r"(rh) : "r"(hl), "r"(hh), "r"(cc));
+ 
+  //printf("ah : %.8x , al : %.8x , bh : %.8x , bl : %.8x , rh : %.8x , rl : %.8x , c : %.8x\n", ah,al,bh,bl,rh,rl,cc);
+  asm volatile ("mov.b64 %0, {%1, %2};" : "=l"(r) : "r"(rl), "r"(rh));
+
+  return r;
+} 
+
 DECLSPEC u32x hc_bfe (const u32x a, const u32x b, const u32x c)
 {
   u32x r = 0;
@@ -1837,6 +1950,25 @@ DECLSPEC u32 hc_bfe_S (const u32 a, const u32 b, const u32 c)
   u32 r = 0;
 
   asm volatile ("bfe.u32 %0, %1, %2, %3;" : "=r"(r) : "r"(a), "r"(b), "r"(c));
+
+  return r;
+}
+
+DECLSPEC u64 hc_bfe_S64 (const u64 a, const u64 b, const u32 c)
+{
+  u64 r = 0;
+
+  asm volatile ("bfe.u64 %0, %1, %2, %3;" : "=r"(r) : "r"(a), "r"(b), "r"(c));
+
+  return r;
+}
+
+
+DECLSPEC u64 hc_bfi_S64 (const u64 a, const u64 b, const u32 c)
+{
+  u64 r = 0;
+  const u64 tmp = b << c;
+  asm volatile ("bfi.b64 %0, %1, %2, %3, 16;" : "=l"(r) : "l"(a), "l"(tmp), "r"(c));
 
   return r;
 }
@@ -1942,6 +2074,15 @@ DECLSPEC u32 hc_bytealign_S (const u32 a, const u32 b, const int c)
   return r;
 }
 
+DECLSPEC u64 hc_bytealign_S64 (const u64 a, const u64 b, const int c) // TODO
+{
+  const int c_mod_4 = c & 3;
+
+  const u32 r = hc_funnelshift_l (a, b, c_mod_4 * 8);
+
+  return r;
+}
+
 DECLSPEC u32 hc_2bytesalign_S (const u32 a, const u32 b, const int c)
 {
   //TODO
@@ -1983,6 +2124,17 @@ DECLSPEC u32x hc_bytealign (const u32x a, const u32x b, const int c)
 }
 
 DECLSPEC u32 hc_bytealign_S (const u32 a, const u32 b, const int c)
+{
+  const int c_mod_4 = c & 3;
+
+  const int c_minus_4 = 4 - c_mod_4;
+
+  const u32 r = hc_byte_perm_S (a, b, (0x76543210 >> (c_minus_4 * 4)) & 0xffff);
+
+  return r;
+}
+
+DECLSPEC u64 hc_bytealign_S64 (const u64 a, const u64 b, const int c) // TODO
 {
   const int c_mod_4 = c & 3;
 
@@ -2111,6 +2263,32 @@ DECLSPEC u32 hc_bfe_S (const u32 a, const u32 b, const u32 c)
   #undef BFE
 }
 
+DECLSPEC u64 hc_bfe_S64 (const u64 a, const u64 b, const u32 c) // todo
+{
+  #define BIT(x)      (1u << (x))
+  #define BIT_MASK(x) (BIT (x) - 1)
+  #define BFE(x,y,z)  (((x) >> (y)) & BIT_MASK (z))
+
+  return BFE (a, b, c);
+
+  #undef BIT
+  #undef BIT_MASK
+  #undef BFE
+}
+
+DECLSPEC u64 hc_bfi_S64 (const u64 a, const u64 b, const u32 c) // TODO
+{
+  #define BIT(x)      (1u << (x))
+  #define BIT_MASK(x) (BIT (x) - 1)
+  #define BFE(x,y,z)  (((x) >> (y)) & BIT_MASK (z))
+
+  return BFE (a, b, c);
+
+  #undef BIT
+  #undef BIT_MASK
+  #undef BFE
+}
+
 DECLSPEC u32x hc_bytealign_be (const u32x a, const u32x b, const int c)
 {
   u32x r = 0;
@@ -2163,6 +2341,19 @@ DECLSPEC u32 hc_bytealign_S (const u32 a, const u32 b, const int c)
   else if (cm == 1) { r = (a >> 24) | (b <<  8); }
   else if (cm == 2) { r = (a >> 16) | (b << 16); }
   else if (cm == 3) { r = (a >>  8) | (b << 24); }
+
+  return r;
+}
+
+DECLSPEC u64 hc_bytealign_S64 (const u64 a, const u64 b, const int c) // TO CHECK
+{
+  u64 r = 0;
+  const int cm = c & 3;
+
+       if (cm == 0) { r = b;                     }
+  else if (cm == 1) { r = (a >> 48) | (b << 16); }
+  else if (cm == 2) { r = (a >> 32) | (b << 32); }
+  else if (cm == 3) { r = (a >> 16) | (b << 48); }
 
   return r;
 }
@@ -21638,6 +21829,41 @@ DECLSPEC void set_mark_1x4_S (PRIVATE_AS u32 *v, const u32 offset)
   v[3] = (c == 3) ? r : 0;
 }
 
+DECLSPEC void set_mark_1x16_S_16 (PRIVATE_AS u32 *v, const u32 offset)
+{
+  const u32 c = (offset & 15) / 4;
+  const u32 r = 0xffff << ((offset & 2) * 8);
+  
+  v[0 ] = (c == 0 ) ? r : 0;
+  v[1 ] = (c == 1 ) ? r : 0;
+  v[2 ] = (c == 2 ) ? r : 0;
+  v[3 ] = (c == 3 ) ? r : 0;
+  v[4 ] = (c == 4 ) ? r : 0;
+  v[5 ] = (c == 5 ) ? r : 0;
+  v[6 ] = (c == 6 ) ? r : 0;
+  v[7 ] = (c == 7 ) ? r : 0;
+  v[8 ] = (c == 8 ) ? r : 0;
+  v[9 ] = (c == 9 ) ? r : 0;
+  v[10] = (c == 10) ? r : 0;
+  v[11] = (c == 11) ? r : 0;
+  v[12] = (c == 12) ? r : 0;
+  v[13] = (c == 13) ? r : 0;
+  v[14] = (c == 14) ? r : 0;
+  v[15] = (c == 15) ? r : 0;
+}
+
+
+DECLSPEC void set_mark_1x4_S_64 (PRIVATE_AS u64 *v, const u32 offset)
+{
+  const u32 c = (offset & 15) / 4;
+  const u64 r = 0xffff << ((offset & 2) * 8);
+  
+  v[0] = (c == 0) ? r : 0;
+  v[1] = (c == 1) ? r : 0;
+  v[2] = (c == 2) ? r : 0;
+  v[3] = (c == 3) ? r : 0;
+}
+
 DECLSPEC void set_mark_1x4_S_16 (PRIVATE_AS u32 *v, const u32 offset)
 {
   const u32 c = (offset & 15) / 4;
@@ -21650,6 +21876,35 @@ DECLSPEC void set_mark_1x4_S_16 (PRIVATE_AS u32 *v, const u32 offset)
 }
 
 DECLSPEC void append_helper_1x4_S (PRIVATE_AS u32 *r, const u32 v, PRIVATE_AS const u32 *m)
+{
+  r[0] |= v & m[0];
+  r[1] |= v & m[1];
+  r[2] |= v & m[2];
+  r[3] |= v & m[3];
+}
+
+
+DECLSPEC void append_helper_1x16_S (PRIVATE_AS u32 *r, const u32 v, PRIVATE_AS const u32 *m)
+{
+  r[0 ] |= v & m[0 ];
+  r[1 ] |= v & m[1 ];
+  r[2 ] |= v & m[2 ];
+  r[3 ] |= v & m[3 ];
+  r[4 ] |= v & m[4 ];
+  r[5 ] |= v & m[5 ];
+  r[6 ] |= v & m[6 ];
+  r[7 ] |= v & m[7 ];
+  r[8 ] |= v & m[8 ];
+  r[9 ] |= v & m[9 ];
+  r[10] |= v & m[10];
+  r[11] |= v & m[11];
+  r[12] |= v & m[12];
+  r[13] |= v & m[13];
+  r[14] |= v & m[14];
+  r[15] |= v & m[15];
+}
+
+DECLSPEC void append_helper_1x4_S64 (PRIVATE_AS u64 *r, const u64 v, PRIVATE_AS const u64 *m)
 {
   r[0] |= v & m[0];
   r[1] |= v & m[1];
@@ -21787,6 +22042,16 @@ DECLSPEC void append_0x80_8x4_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, PRIVATE
   append_helper_1x4_S (w5, ((offset16 == 5) ? 0x80808080 : 0), v);
   append_helper_1x4_S (w6, ((offset16 == 6) ? 0x80808080 : 0), v);
   append_helper_1x4_S (w7, ((offset16 == 7) ? 0x80808080 : 0), v);
+}
+
+
+DECLSPEC void append_0x80_1x16_S (PRIVATE_AS u32 *w0, const u32 offset)
+{
+  u32 v[16];
+
+  set_mark_1x16_S_16 (v, offset);
+
+  append_helper_1x16_S (w0, 0x80808080, v);
 }
 
 DECLSPEC void make_utf16be_S (PRIVATE_AS const u32 *in, PRIVATE_AS u32 *out1, PRIVATE_AS u32 *out2)
@@ -37989,17 +38254,60 @@ DECLSPEC void switch_buffer_by_offset_1x64_be_S (PRIVATE_AS u32 *w, const u32 of
   sn[2] = vn[2].s##e;     \
   sn[3] = vn[3].s##e;
 
+#define PACKVS16(sn,vn,e)  \
+  sn[0 ] = vn[0 ].s##e;    \
+  sn[1 ] = vn[1 ].s##e;    \
+  sn[2 ] = vn[2 ].s##e;    \
+  sn[3 ] = vn[3 ].s##e;    \
+  sn[4 ] = vn[4 ].s##e;    \
+  sn[5 ] = vn[5 ].s##e;    \
+  sn[6 ] = vn[6 ].s##e;    \
+  sn[7 ] = vn[7 ].s##e;    \
+  sn[8 ] = vn[8 ].s##e;    \
+  sn[9 ] = vn[9 ].s##e;    \
+  sn[10] = vn[10].s##e;    \
+  sn[11] = vn[11].s##e;    \
+  sn[12] = vn[12].s##e;    \
+  sn[13] = vn[13].s##e;    \
+  sn[14] = vn[14].s##e;    \
+  sn[15] = vn[15].s##e;
+
 #define PACKSV4(sn,vn,e)  \
   vn[0].s##e = sn[0];     \
   vn[1].s##e = sn[1];     \
   vn[2].s##e = sn[2];     \
   vn[3].s##e = sn[3];
 
+
+#define PACKSV16(sn,vn,e)  \
+  vn[0 ].s##e = sn[0 ];    \
+  vn[1 ].s##e = sn[1 ];    \
+  vn[2 ].s##e = sn[2 ];    \
+  vn[3 ].s##e = sn[3 ];    \
+  vn[4 ].s##e = sn[4 ];    \
+  vn[5 ].s##e = sn[5 ];    \
+  vn[6 ].s##e = sn[6 ];    \
+  vn[7 ].s##e = sn[7 ];    \
+  vn[8 ].s##e = sn[8 ];    \
+  vn[9 ].s##e = sn[9 ];    \
+  vn[10].s##e = sn[10];    \
+  vn[11].s##e = sn[11];    \
+  vn[12].s##e = sn[12];    \
+  vn[13].s##e = sn[13];    \
+  vn[14].s##e = sn[14];    \
+  vn[15].s##e = sn[15];
+
 #define PACKVS44(s0,s1,s2,s3,v0,v1,v2,v3,e) \
   PACKVS4 (s0, v0, e);                      \
   PACKVS4 (s1, v1, e);                      \
   PACKVS4 (s2, v2, e);                      \
   PACKVS4 (s3, v3, e);
+
+#define PACKVS116(s0,v0,e) \
+  PACKVS16 (s0, v0, e);
+
+#define PACKSV116(s0,v0,e) \
+  PACKSV16 (s0, v0, e);
 
 #define PACKSV44(s0,s1,s2,s3,v0,v1,v2,v3,e) \
   PACKSV4 (s0, v0, e);                      \
@@ -38557,6 +38865,63 @@ DECLSPEC void append_0x80_4x4_VV (PRIVATE_AS u32x *w0, PRIVATE_AS u32x *w1, PRIV
   PACKVS44 (t0, t1, t2, t3, w0, w1, w2, w3, d); append_0x80_4x4_S (t0, t1, t2, t3, offset.sd); PACKSV44 (t0, t1, t2, t3, w0, w1, w2, w3, d);
   PACKVS44 (t0, t1, t2, t3, w0, w1, w2, w3, e); append_0x80_4x4_S (t0, t1, t2, t3, offset.se); PACKSV44 (t0, t1, t2, t3, w0, w1, w2, w3, e);
   PACKVS44 (t0, t1, t2, t3, w0, w1, w2, w3, f); append_0x80_4x4_S (t0, t1, t2, t3, offset.sf); PACKSV44 (t0, t1, t2, t3, w0, w1, w2, w3, f);
+
+  #endif
+}
+
+DECLSPEC void append_0x80_1x16_VV (PRIVATE_AS u32x *w0, const u32x offset)
+{
+  #if VECT_SIZE == 1
+
+  append_0x80_1x16_S (w0, offset);
+
+  #else
+
+  u32 t0[16];
+
+  #endif
+
+  #if   VECT_SIZE == 2
+
+  PACKVS116 (t0, w0, 0); append_0x80_1x16_S (t0, offset.s0); PACKSV116 (t0, w0, 0);
+  PACKVS116 (t0, w0, 1); append_0x80_1x16_S (t0, offset.s1); PACKSV116 (t0, w0, 1);
+
+  #elif VECT_SIZE == 4
+
+  PACKVS116 (t0, w0, 0); append_0x80_1x16_S (t0, offset.s0); PACKSV116 (t0, w0, 0);
+  PACKVS116 (t0, w0, 1); append_0x80_1x16_S (t0, offset.s1); PACKSV116 (t0, w0, 1);
+  PACKVS116 (t0, w0, 2); append_0x80_1x16_S (t0, offset.s2); PACKSV116 (t0, w0, 2);
+  PACKVS116 (t0, w0, 3); append_0x80_1x16_S (t0, offset.s3); PACKSV116 (t0, w0, 3);
+
+  #elif VECT_SIZE == 8
+
+  PACKVS116 (t0, w0, 0); append_0x80_1x16_S (t0, offset.s0); PACKSV116 (t0, w0, 0);
+  PACKVS116 (t0, w0, 1); append_0x80_1x16_S (t0, offset.s1); PACKSV116 (t0, w0, 1);
+  PACKVS116 (t0, w0, 2); append_0x80_1x16_S (t0, offset.s2); PACKSV116 (t0, w0, 2);
+  PACKVS116 (t0, w0, 3); append_0x80_1x16_S (t0, offset.s3); PACKSV116 (t0, w0, 3);
+  PACKVS116 (t0, w0, 4); append_0x80_1x16_S (t0, offset.s4); PACKSV116 (t0, w0, 4);
+  PACKVS116 (t0, w0, 5); append_0x80_1x16_S (t0, offset.s5); PACKSV116 (t0, w0, 5);
+  PACKVS116 (t0, w0, 6); append_0x80_1x16_S (t0, offset.s6); PACKSV116 (t0, w0, 6);
+  PACKVS116 (t0, w0, 7); append_0x80_1x16_S (t0, offset.s7); PACKSV116 (t0, w0, 7);
+
+  #elif VECT_SIZE == 16
+
+  PACKVS116 (t0, w0, 0); append_0x80_1x16_S (t0, offset.s0); PACKSV116 (t0, w0, 0);
+  PACKVS116 (t0, w0, 1); append_0x80_1x16_S (t0, offset.s1); PACKSV116 (t0, w0, 1);
+  PACKVS116 (t0, w0, 2); append_0x80_1x16_S (t0, offset.s2); PACKSV116 (t0, w0, 2);
+  PACKVS116 (t0, w0, 3); append_0x80_1x16_S (t0, offset.s3); PACKSV116 (t0, w0, 3);
+  PACKVS116 (t0, w0, 4); append_0x80_1x16_S (t0, offset.s4); PACKSV116 (t0, w0, 4);
+  PACKVS116 (t0, w0, 5); append_0x80_1x16_S (t0, offset.s5); PACKSV116 (t0, w0, 5);
+  PACKVS116 (t0, w0, 6); append_0x80_1x16_S (t0, offset.s6); PACKSV116 (t0, w0, 6);
+  PACKVS116 (t0, w0, 7); append_0x80_1x16_S (t0, offset.s7); PACKSV116 (t0, w0, 7);
+  PACKVS116 (t0, w0, 8); append_0x80_1x16_S (t0, offset.s8); PACKSV116 (t0, w0, 8);
+  PACKVS116 (t0, w0, 9); append_0x80_1x16_S (t0, offset.s9); PACKSV116 (t0, w0, 9);
+  PACKVS116 (t0, w0, a); append_0x80_1x16_S (t0, offset.sa); PACKSV116 (t0, w0, a);
+  PACKVS116 (t0, w0, b); append_0x80_1x16_S (t0, offset.sb); PACKSV116 (t0, w0, b);
+  PACKVS116 (t0, w0, c); append_0x80_1x16_S (t0, offset.sc); PACKSV116 (t0, w0, c);
+  PACKVS116 (t0, w0, d); append_0x80_1x16_S (t0, offset.sd); PACKSV116 (t0, w0, d);
+  PACKVS116 (t0, w0, e); append_0x80_1x16_S (t0, offset.se); PACKSV116 (t0, w0, e);
+  PACKVS116 (t0, w0, f); append_0x80_1x16_S (t0, offset.sf); PACKSV116 (t0, w0, f);
 
   #endif
 }

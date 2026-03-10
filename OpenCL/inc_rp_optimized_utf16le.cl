@@ -2971,7 +2971,7 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_omit_utf16le (MAYBE_UNUSED const u32 p0
   return out_len;
 }
 
-DECLSPEC HC_INLINE_RP u32 rule_op_mangle_insert_every (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len)  //TODO
+DECLSPEC HC_INLINE_RP u32 rule_op_mangle_insert_every_utf16le (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len)  //TODO
 {
   if (p0 > in_len) return in_len;
 
@@ -3325,7 +3325,7 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_utf16le (MAYBE_UNUSED const u32
   return in_len;
 }
 
-DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_l (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len) //TODO
+DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_l_utf16le (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len) //TODO
 {
   u32 buf_in[8];
 
@@ -3365,7 +3365,7 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_l (MAYBE_UNUSED const u32
   return in_len;
 }
 
-DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_u (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len)  // TODO
+DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_u_utf16le (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len)  // TODO
 {
   u32 buf_in[8];
 
@@ -3405,7 +3405,7 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_u (MAYBE_UNUSED const u32
   return in_len;
 }
 
-DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_d (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len)  //TODO
+DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_d_utf16le (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len)  //TODO
 {
   u32 buf_in[8];
 
@@ -3445,7 +3445,7 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_d (MAYBE_UNUSED const u32
   return in_len;
 }
 
-DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_lh (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len)  //TODO
+DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_lh_utf16le (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len)  //TODO
 {
   u32 buf_in[8];
 
@@ -3485,7 +3485,7 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_lh (MAYBE_UNUSED const u3
   return in_len;
 }
 
-DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_uh (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len)  // TODO
+DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_uh_utf16le (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len)  // TODO
 {
   u32 buf_in[8];
 
@@ -3525,7 +3525,7 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_uh (MAYBE_UNUSED const u3
   return in_len;
 }
 
-DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_s (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len)  // TODO
+DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_s_utf16le (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len)  // TODO
 {
   u32 buf_in[8];
 
@@ -3565,14 +3565,14 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_s (MAYBE_UNUSED const u32
   return in_len;
 }
 
-DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len) //TODO
+DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_utf16le (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len) //TODO
 {
-       if ((u8)p0 == 'l') return rule_op_mangle_replace_class_l  (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'u') return rule_op_mangle_replace_class_u  (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'd') return rule_op_mangle_replace_class_d  (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'h') return rule_op_mangle_replace_class_lh (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'H') return rule_op_mangle_replace_class_uh (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 's') return rule_op_mangle_replace_class_s  (p0, p1, buf0, buf1, in_len);
+       if ((u8)p0 == 'l') return rule_op_mangle_replace_class_l_utf16le   (p0, p1, buf0, buf1, in_len);
+  else if ((u8)p0 == 'u') return rule_op_mangle_replace_class_u_utf16le  (p0, p1, buf0, buf1, in_len);
+  else if ((u8)p0 == 'd') return rule_op_mangle_replace_class_d_utf16le  (p0, p1, buf0, buf1, in_len);
+  else if ((u8)p0 == 'h') return rule_op_mangle_replace_class_lh_utf16le (p0, p1, buf0, buf1, in_len);
+  else if ((u8)p0 == 'H') return rule_op_mangle_replace_class_uh_utf16le (p0, p1, buf0, buf1, in_len);
+  else if ((u8)p0 == 's') return rule_op_mangle_replace_class_s_utf16le  (p0, p1, buf0, buf1, in_len);
 
   return in_len;
 }
@@ -5038,13 +5038,13 @@ DECLSPEC u32 apply_rule_optimized_utf16le (const u32 name, const u32 p0, const u
     case RULE_OP_MANGLE_EXTRACT:          out_len = rule_op_mangle_extract_utf16le          (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
     case RULE_OP_MANGLE_OMIT:             out_len = rule_op_mangle_omit_utf16le             (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
     case RULE_OP_MANGLE_INSERT:           out_len = rule_op_mangle_insert_utf16le           (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
-    case RULE_OP_MANGLE_INSERT_EVERY:     out_len = rule_op_mangle_insert_every             (p0, p1, buf0, buf1, buf2, buf3, out_len); break; // TODO
+    case RULE_OP_MANGLE_INSERT_EVERY:     out_len = rule_op_mangle_insert_every_utf16le     (p0, p1, buf0, buf1, buf2, buf3, out_len); break; // TODO
     case RULE_OP_MANGLE_OVERSTRIKE:       out_len = rule_op_mangle_overstrike_utf16le       (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
     case RULE_OP_MANGLE_TRUNCATE_AT:      out_len = rule_op_mangle_truncate_at_utf16le      (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
     case RULE_OP_MANGLE_REPLACE:          out_len = rule_op_mangle_replace_utf16le          (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
-    case RULE_OP_MANGLE_REPLACE_CLASS:    out_len = rule_op_mangle_replace_class            (p0, p1, buf0, buf1, buf2, buf3, out_len); break;// TODO
+    case RULE_OP_MANGLE_REPLACE_CLASS:    out_len = rule_op_mangle_replace_class_utf16le    (p0, p1, buf0, buf1, buf2, buf3, out_len); break;// TODO
     case RULE_OP_MANGLE_PURGECHAR:        out_len = rule_op_mangle_purgechar_utf16le        (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
-    case RULE_OP_MANGLE_PURGECHAR_CLASS:  out_len = rule_op_mangle_purgechar_class_utf16le           (p0, p1, buf0, buf1, buf2, buf3, out_len); break; // TODO
+    case RULE_OP_MANGLE_PURGECHAR_CLASS:  out_len = rule_op_mangle_purgechar_class_utf16le  (p0, p1, buf0, buf1, buf2, buf3, out_len); break; // TODO
     //case RULE_OP_MANGLE_TOGGLECASE_REC:   out_len = rule_op_mangle_togglecase_rec_utf16le   (p0, p1, buf0, buf1, buf2, buf3, out_len); break;
     case RULE_OP_MANGLE_DUPECHAR_FIRST:   out_len = rule_op_mangle_dupechar_first_utf16le   (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
     case RULE_OP_MANGLE_DUPECHAR_LAST:    out_len = rule_op_mangle_dupechar_last_utf16le    (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
@@ -5056,16 +5056,16 @@ DECLSPEC u32 apply_rule_optimized_utf16le (const u32 name, const u32 p0, const u
     case RULE_OP_MANGLE_CHR_SHIFTR:       out_len = rule_op_mangle_chr_shiftr_utf16le       (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
     case RULE_OP_MANGLE_CHR_INCR:         out_len = rule_op_mangle_chr_incr_utf16le         (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
     case RULE_OP_MANGLE_CHR_DECR:         out_len = rule_op_mangle_chr_decr_utf16le         (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
-    case RULE_OP_MANGLE_CHR_ADD:          out_len = rule_op_mangle_chr_add_utf16le                   (p0, p1, buf0, buf1, buf2, buf3, out_len); break;//TODO
+    case RULE_OP_MANGLE_CHR_ADD:          out_len = rule_op_mangle_chr_add_utf16le          (p0, p1, buf0, buf1, buf2, buf3, out_len); break;//TODO
     case RULE_OP_MANGLE_REPLACE_NP1:      out_len = rule_op_mangle_replace_np1_utf16le      (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
     case RULE_OP_MANGLE_REPLACE_NM1:      out_len = rule_op_mangle_replace_nm1_utf16le      (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
     case RULE_OP_MANGLE_DUPEBLOCK_FIRST:  out_len = rule_op_mangle_dupeblock_first_utf16le  (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
     case RULE_OP_MANGLE_DUPEBLOCK_LAST:   out_len = rule_op_mangle_dupeblock_last_utf16le   (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
     case RULE_OP_MANGLE_TITLE_SEP:        out_len = rule_op_mangle_title_sep_utf16le        (p0, p1, buf0, buf1, buf2, buf3, out_len); break;  // OK UTF16, TODO Check perf
-    case RULE_OP_MANGLE_TITLE_SEP_CLASS:  out_len = rule_op_mangle_title_sep_class_utf16le           (p0, p1, buf0, buf1, buf2, buf3, out_len); break; // TODO
+    case RULE_OP_MANGLE_TITLE_SEP_CLASS:  out_len = rule_op_mangle_title_sep_class_utf16le  (p0, p1, buf0, buf1, buf2, buf3, out_len); break; // TODO
     case RULE_OP_MANGLE_TITLE:            out_len = rule_op_mangle_title_sep_utf16le        (' ', p1, buf0, buf1, buf2, buf3, out_len); break; // OK UTF16, TODO Check perf
-    case RULE_OP_MANGLE_TO_HEX_LOWER:     out_len = rule_op_mangle_to_hex_lower_utf16le              (p0, p1, buf0, buf1, buf2, buf3, out_len); break; // TODO
-    case RULE_OP_MANGLE_TO_HEX_UPPER:     out_len = rule_op_mangle_to_hex_upper_utf16le              (p0, p1, buf0, buf1, buf2, buf3, out_len); break; // TODO
+    case RULE_OP_MANGLE_TO_HEX_LOWER:     out_len = rule_op_mangle_to_hex_lower_utf16le     (p0, p1, buf0, buf1, buf2, buf3, out_len); break; // TODO
+    case RULE_OP_MANGLE_TO_HEX_UPPER:     out_len = rule_op_mangle_to_hex_upper_utf16le     (p0, p1, buf0, buf1, buf2, buf3, out_len); break; // TODO
   }
 
   return out_len;

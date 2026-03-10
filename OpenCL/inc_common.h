@@ -277,16 +277,19 @@ DECLSPEC u64  hc_swap64_S (const u64  v);
 
 DECLSPEC u32x hc_bytealign      (const u32x a, const u32x b, const int  c);
 DECLSPEC u32  hc_bytealign_S    (const u32  a, const u32  b, const int  c);
+DECLSPEC u64  hc_bytealign_S64  (const u64  a, const u64  b, const int  c);
 DECLSPEC u32  hc_2bytesalign_S  (const u32  a, const u32  b, const int  c);
 DECLSPEC u32x hc_bytealign_be   (const u32x a, const u32x b, const int  c);
 DECLSPEC u32  hc_bytealign_be_S (const u32  a, const u32  b, const int  c);
 DECLSPEC u32x hc_byte_perm      (const u32x a, const u32x b, const int  c);
 DECLSPEC u32  hc_byte_perm_S    (const u32  a, const u32  b, const int  c);
+DECLSPEC u64  hc_byte_perm_S64  (const u64  a, const u64  b, const int  c);
 
 DECLSPEC u32x hc_add3           (const u32x a, const u32x b, const u32x c);
 DECLSPEC u32  hc_add3_S         (const u32  a, const u32  b, const u32  c);
 DECLSPEC u32x hc_bfe            (const u32x a, const u32x b, const u32x c);
 DECLSPEC u32  hc_bfe_S          (const u32  a, const u32  b, const u32  c);
+DECLSPEC u64  hc_bfe_S64         (const u64  a, const u64  b, const u64  c);
 DECLSPEC u32x hc_lop_0x96       (const u32x a, const u32x b, const u32x c);
 DECLSPEC u32  hc_lop_0x96_S     (const u32  a, const u32  b, const u32  c);
 
@@ -347,6 +350,7 @@ DECLSPEC void undo_real_utf16le (PRIVATE_AS const u32x *in1, PRIVATE_AS const u3
 
 DECLSPEC void set_mark_1x4 (PRIVATE_AS u32 *v, const u32 offset);
 DECLSPEC void append_helper_1x4 (PRIVATE_AS u32x *r, const u32 v, PRIVATE_AS const u32 *m);
+DECLSPEC void append_helper_1x16_S (PRIVATE_AS u32 *r, const u32 v, PRIVATE_AS const u32 *m);
 DECLSPEC void append_0x80_1x4 (PRIVATE_AS u32x *w0, const u32 offset);
 DECLSPEC void append_0x80_2x4 (PRIVATE_AS u32x *w0, PRIVATE_AS u32x *w1, const u32 offset);
 DECLSPEC void append_0x80_3x4 (PRIVATE_AS u32x *w0, PRIVATE_AS u32x *w1, PRIVATE_AS u32x *w2, const u32 offset);
@@ -368,6 +372,8 @@ DECLSPEC void truncate_block_4x4_be_S (PRIVATE_AS u32 *w0, const u32 len);
 DECLSPEC void truncate_block_16x4_le_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, PRIVATE_AS u32 *w2, PRIVATE_AS u32 *w3, const u32 len);
 DECLSPEC void truncate_block_16x4_be_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, PRIVATE_AS u32 *w2, PRIVATE_AS u32 *w3, const u32 len);
 DECLSPEC void set_mark_1x4_S (PRIVATE_AS u32 *v, const u32 offset);
+DECLSPEC void set_mark_1x16_S_16 (PRIVATE_AS u32 *v, const u32 offset);
+DECLSPEC void set_mark_1x4_S64 (PRIVATE_AS u64 *v, const u32 offset);
 DECLSPEC void append_helper_1x4_S (PRIVATE_AS u32 *r, const u32 v, PRIVATE_AS const u32 *m);
 DECLSPEC void append_0x01_2x4_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, const u32 offset);
 DECLSPEC void append_0x06_2x4_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, const u32 offset);
@@ -378,6 +384,7 @@ DECLSPEC void append_0x80_1x4_S (PRIVATE_AS u32 *w0, const u32 offset);
 DECLSPEC void append_0x80_2x4_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, const u32 offset);
 DECLSPEC void append_0x80_3x4_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, PRIVATE_AS u32 *w2, const u32 offset);
 DECLSPEC void append_0x80_4x4_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, PRIVATE_AS u32 *w2, PRIVATE_AS u32 *w3, const u32 offset);
+DECLSPEC void append_0x80_1x16_S (PRIVATE_AS u32 *w0, const u32 offset);
 DECLSPEC void append_0x80_8x4_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, PRIVATE_AS u32 *w2, PRIVATE_AS u32 *w3, PRIVATE_AS u32 *w4, PRIVATE_AS u32 *w5, PRIVATE_AS u32 *w6, PRIVATE_AS u32 *w7, const u32 offset);
 DECLSPEC void make_utf16be_S (PRIVATE_AS const u32 *in, PRIVATE_AS u32 *out1, PRIVATE_AS u32 *out2);
 DECLSPEC void make_utf16le_S (PRIVATE_AS const u32 *in, PRIVATE_AS u32 *out1, PRIVATE_AS u32 *out2);
@@ -401,6 +408,7 @@ DECLSPEC void append_0x06_2x4_VV (PRIVATE_AS u32x *w0, PRIVATE_AS u32x *w1, cons
 DECLSPEC void append_0x80_2x4_VV (PRIVATE_AS u32x *w0, PRIVATE_AS u32x *w1, const u32x offset);
 DECLSPEC void append_0x80_4x4_VV (PRIVATE_AS u32x *w0, PRIVATE_AS u32x *w1, PRIVATE_AS u32x *w2, PRIVATE_AS u32x *w3, const u32x offset);
 DECLSPEC void append_0x2d_4x4_VV (PRIVATE_AS u32x *w0, PRIVATE_AS u32x *w1, PRIVATE_AS u32x *w2, PRIVATE_AS u32x *w3, const u32x offset);
+DECLSPEC void append_0x80_1x16_VV (PRIVATE_AS u32x *w0,const u32x offset);
 DECLSPEC void append_0x3a_4x4_VV (PRIVATE_AS u32x *w0, PRIVATE_AS u32x *w1, PRIVATE_AS u32x *w2, PRIVATE_AS u32x *w3, const u32x offset);
 
 #endif // INC_COMMON_H
