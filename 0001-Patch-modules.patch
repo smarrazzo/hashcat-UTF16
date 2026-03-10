@@ -1,0 +1,93 @@
+From ebb69f9875d9776c63fc2a5e32edb29a79e38826 Mon Sep 17 00:00:00 2001
+From: Samuel MARRAZZO <samuel.marrazzo@synetis.com>
+Date: Fri, 26 Jul 2024 14:18:04 +0200
+Subject: [PATCH] Patch modules
+
+---
+ src/modules/module_00134.c | 2 +-
+ src/modules/module_00143.c | 4 ++--
+ src/modules/module_01443.c | 4 ++--
+ src/modules/module_05502.c | 3 ++-
+ 4 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/src/modules/module_00134.c b/src/modules/module_00134.c
+index 52c58f1d8..9a7e1b39c 100644
+--- a/src/modules/module_00134.c
++++ b/src/modules/module_00134.c
+@@ -18,7 +18,7 @@ static const u32   DGST_POS3      = 1;
+ static const u32   DGST_SIZE      = DGST_SIZE_4_5;
+ static const u32   HASH_CATEGORY  = HASH_CATEGORY_RAW_HASH_SALTED;
+ static const char *HASH_NAME      = "sha1(utf16le($pass).$salt) Full UTF16LE";
+-static const u64   KERN_TYPE      = 130;
++static const u64   KERN_TYPE      = 132;
+ static const u32   OPTI_TYPE      = OPTI_TYPE_ZERO_BYTE
+                                   | OPTI_TYPE_PRECOMPUTE_INIT
+                                   | OPTI_TYPE_EARLY_SKIP
+diff --git a/src/modules/module_00143.c b/src/modules/module_00143.c
+index e349f3f99..306f3fead 100644
+--- a/src/modules/module_00143.c
++++ b/src/modules/module_00143.c
+@@ -33,7 +33,7 @@ static const u64   OPTS_TYPE      = OPTS_TYPE_STOCK_MODULE
+                                   | OPTS_TYPE_ST_BASE64;
+ static const u32   SALT_TYPE      = SALT_TYPE_EMBEDDED;
+ static const char *ST_PASS        = "\xac\x20\xac\x20";
+-static const char *ST_HASH        = "$episerver$*0*MjEwNA==*ZUgAmuaYTqAvisD0A427FA3oaWU";
++static const char *ST_HASH        = "$episerver$*0*MjEwNA==*ZUgAmuaYTqAvisD0A427FA3oaWU=";
+ static const char *ICONV          = "UTF16LE";
+ 
+ u32         module_attack_exec    (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ATTACK_EXEC;     }
+@@ -84,7 +84,7 @@ int module_hash_decode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSE
+   token.attr[2]    = TOKEN_ATTR_VERIFY_LENGTH
+                    | TOKEN_ATTR_VERIFY_BASE64A;
+ 
+-  token.len[3]     = 27;
++  token.len[3]     = 28;
+   token.attr[3]    = TOKEN_ATTR_FIXED_LENGTH
+                    | TOKEN_ATTR_VERIFY_BASE64A;
+ 
+diff --git a/src/modules/module_01443.c b/src/modules/module_01443.c
+index 68d0499c1..aa14ee495 100644
+--- a/src/modules/module_01443.c
++++ b/src/modules/module_01443.c
+@@ -33,7 +33,7 @@ static const u64   OPTS_TYPE      = OPTS_TYPE_STOCK_MODULE
+                                   | OPTS_TYPE_ST_BASE64;
+ static const u32   SALT_TYPE      = SALT_TYPE_EMBEDDED;
+ static const char *ST_PASS        = "\xac\x20\xac\x20";
+-static const char *ST_HASH        = "$episerver$*1*NDg1NTIz*8BFCg/YJBAuZs/wjbH3OWKe69BLr5Lao26ybpnD48Zk";
++static const char *ST_HASH        = "$episerver$*1*NDg1NTIz*8BFCg/YJBAuZs/wjbH3OWKe69BLr5Lao26ybpnD48Zk=";
+ static const char *ICONV          = "UTF16LE";
+ 
+ u32         module_attack_exec    (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ATTACK_EXEC;     }
+@@ -84,7 +84,7 @@ int module_hash_decode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSE
+   token.attr[2]    = TOKEN_ATTR_VERIFY_LENGTH
+                    | TOKEN_ATTR_VERIFY_BASE64A;
+ 
+-  token.len[3]     = 43;
++  token.len[3]     = 44;
+   token.attr[3]    = TOKEN_ATTR_FIXED_LENGTH
+                    | TOKEN_ATTR_VERIFY_BASE64A;
+ 
+diff --git a/src/modules/module_05502.c b/src/modules/module_05502.c
+index 9f657ecce..e67a956db 100644
+--- a/src/modules/module_05502.c
++++ b/src/modules/module_05502.c
+@@ -29,7 +29,7 @@ static const u64   OPTS_TYPE      = OPTS_TYPE_STOCK_MODULE
+                                   | OPTS_TYPE_PT_UTF16LE
+                                   | OPTS_TYPE_ST_HEX;
+ static const u32   SALT_TYPE      = SALT_TYPE_EMBEDDED;
+-static const char *ST_PASS        = "\xac\x20\xac\x20";
++static const char *ST_PASS        = "hascat";
+ static const char *ST_HASH        = "::5V4T:ada06359242920a500000000000000000000000000000000:0556d5297b5daa70eaffde82ef99293a3f3bb59b7c9704ea:9c23f6c094853920";
+ static const char *ICONV          = "UTF16LE";
+ 
+@@ -61,6 +61,7 @@ const char *module_st_hash        (MAYBE_UNUSED const hashconfig_t *hashconfig,
+ const char *module_st_pass        (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ST_PASS;         }
+ const char *module_inconv         (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra) { return ICONV;           }
+ 
++
+ static void transform_netntlmv1_key (const u8 *nthash, u8 *key)
+ {
+   key[0] =                    (nthash[0] >> 0);
+-- 
+2.43.0.windows.1
+
