@@ -1880,7 +1880,7 @@ DECLSPEC u32 hc_byte_perm_S (const u32 a, const u32 b, const int c)
   return r;
 }
 
-DECLSPEC u64 hc_byte_perm_S64 (const u64 a, const u64 b, const int c) :: todo
+DECLSPEC u64 hc_byte_perm_S64 (const u64 a, const u64 b, const int c) // todo
 {
   u64 r = 0;
   u32 rl,rh;
@@ -1958,17 +1958,17 @@ DECLSPEC u64 hc_bfe_S64 (const u64 a, const u64 b, const u64 c)
 {
   u64 r = 0;
 
-  asm volatile ("bfe.u64 %0, %1, %2, %3;" : "=r"(r) : "r"(a), "r"(b), "r"(c));
+  asm volatile ("bfe.u64 %0, %1, %2, %3;" : "=l"(r) : "l"(a), "l"(b), "l"(c));
 
   return r;
 }
 
 
-DECLSPEC u64 hc_bfi_S64 (const u64 a, const u64 b, const u32 c)
+DECLSPEC u64 hc_bfi_S64 (const u64 a, const u64 b, const u64 c)
 {
   u64 r = 0;
   const u64 tmp = b << c;
-  asm volatile ("bfi.b64 %0, %1, %2, %3, 16;" : "=l"(r) : "l"(a), "l"(tmp), "r"(c));
+  asm volatile ("bfi.b64 %0, %1, %2, %3, 16;" : "=l"(r) : "l"(a), "l"(tmp), "l"(c));
 
   return r;
 }
@@ -3669,6 +3669,7 @@ DECLSPEC void make_utf16le (PRIVATE_AS const u32x *in, PRIVATE_AS u32x *out1, PR
 
 DECLSPEC u32x make_real_utf16le (PRIVATE_AS const u32x *in, PRIVATE_AS u32x *out1, PRIVATE_AS u32x *out2)
 {
+  /*
   #if defined IS_NV
 
   int in_pos=0;
@@ -3780,7 +3781,8 @@ DECLSPEC u32x make_real_utf16le (PRIVATE_AS const u32x *in, PRIVATE_AS u32x *out
   }
 
   return out_len;*/
-  #endif
+  //#endif
+  return 0;
 }
 
 
