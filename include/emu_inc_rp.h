@@ -10,5 +10,6 @@
 
 #include "inc_vendor.h"
 #include "inc_rp.h"
+#include "inc_rp_utf16le.h"
 
 #endif // HC_EMU_INC_RP_H

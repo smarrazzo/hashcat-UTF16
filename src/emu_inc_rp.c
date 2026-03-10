@@ -8,4 +8,5 @@
 #include "emu_general.h"
 
 #include "inc_rp.cl"
+#include "inc_rp_utf16le.cl"
 
