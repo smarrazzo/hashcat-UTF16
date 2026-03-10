@@ -3,6 +3,9 @@
  * License.....: MIT
  */
 
+#ifndef INC_RP_COMMON_CL
+#define INC_RP_COMMON_CL
+
 #include "inc_vendor.h"
 #include "inc_types.h"
 #include "inc_platform.h"
@@ -129,3 +132,5 @@ DECLSPEC MAYBE_UNUSED u32 generate_cshift_mask_utf16le (const u32 value) // TODO
 #undef DECLSPEC
 #define DECLSPEC
 #endif
+
+#endif // INC_RP_COMMON_CL
