@@ -726,8 +726,6 @@ int cpu_rule_to_kernel_rule_utf16le (u16 *rule_buf, u32 rule_len, kernel_rule_t 
         SET_NAME_UTF16LE (rule, rule_buf[rule_pos]);
         SET_P0_UTF16LE   (rule, rule_buf[rule_pos]);
         SET_P1_UTF16LE   (rule, rule_buf[rule_pos]);
-
-
         break;
 
       case RULE_OP_MANGLE_PURGECHAR:
@@ -1225,18 +1223,10 @@ int kernel_rules_load (hashcat_ctx_t *hashcat_ctx, kernel_rule_t **out_buf, u32 
       if(hashcat_ctx->module_ctx->module_iconv != MODULE_DEFAULT){
         char  *iconv_ptr = iconv_tmp;
         size_t iconv_sz  = HCBUFSIZ_TINY;
-        iconv (iconv_ctx, &line_buf_new, &rule_len, &iconv_ptr, &iconv_sz);
+        size_t in_left   = (size_t) rule_len;
+        iconv (iconv_ctx, &line_buf_new, &in_left, &iconv_ptr, &iconv_sz);
         line_buf_new = iconv_tmp;
-
-#if defined (_POSIX)
-        rule_len = 2048+rule_len;
-#endif // _POSIX
-#if defined (_APPLE)
-        rule_len = 2048+rule_len;
-#endif // _POSIX
-#if defined (_WIN)
-        rule_len = (HCBUFSIZ_TINY - iconv_sz)/2;
-#endif // _WIN
+        rule_len = (u32) (iconv_ptr - iconv_tmp) / 2;
 
         if (cpu_rule_to_kernel_rule_utf16le ((u16*)line_buf_new, rule_len, &kernel_rules_buf[kernel_rules_cnt]) == -1)
         {
