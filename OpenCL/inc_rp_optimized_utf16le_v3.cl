@@ -7,8 +7,8 @@
 #include "inc_types.h"
 #include "inc_platform.h"
 #include "inc_common.h"
-#include "inc_rp_optimized_utf16le_v3.h"
 
+#include "inc_rp_optimized_utf16le_v3.h"
 #include "inc_rp_common.cl"
 
 #ifndef MAYBE_UNUSED
@@ -2909,12 +2909,12 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_s_utf16le (MAYBE_UNUSED c
 
 DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_utf16le (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len) //TODO
 {
-       if ((u8)p0 == 'l') return rule_op_mangle_replace_class_l_utf16le  (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'u') return rule_op_mangle_replace_class_u_utf16le  (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'd') return rule_op_mangle_replace_class_d_utf16le  (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'h') return rule_op_mangle_replace_class_lh_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'H') return rule_op_mangle_replace_class_uh_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 's') return rule_op_mangle_replace_class_s_utf16le  (p0, p1, buf0, buf1, in_len);
+       if ((u8)p0 == 'l') return rule_op_mangle_replace_class_l_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'u') return rule_op_mangle_replace_class_u_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'd') return rule_op_mangle_replace_class_d_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'h') return rule_op_mangle_replace_class_lh_utf16le (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'H') return rule_op_mangle_replace_class_uh_utf16le (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 's') return rule_op_mangle_replace_class_s_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
 
   return in_len;
 }
@@ -3228,12 +3228,13 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_purgechar_class_s_utf16le (MAYBE_UNUSED
 
 DECLSPEC HC_INLINE_RP u32 rule_op_mangle_purgechar_class_utf16le  (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u32 *buf0, MAYBE_UNUSED PRIVATE_AS u32 *buf1, MAYBE_UNUSED PRIVATE_AS u32 *buf2, MAYBE_UNUSED PRIVATE_AS u32 *buf3, const u32 in_len) 
 {
-  else if ((u8)p0 == 'u') return rule_op_mangle_purgechar_class_u_utf16le (p0, p1, buf0, buf1, in_len);
-       if ((u8)p0 == 'l') return rule_op_mangle_purgechar_class_l_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'd') return rule_op_mangle_purgechar_class_d_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'h') return rule_op_mangle_purgechar_class_lh_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 'H') return rule_op_mangle_purgechar_class_uh_utf16le (p0, p1, buf0, buf1, in_len);
-  else if ((u8)p0 == 's') return rule_op_mangle_purgechar_class_s_utf16le (p0, p1, buf0, buf1, in_len);
+  
+       if ((u8)p0 == 'l') return rule_op_mangle_purgechar_class_l_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'u') return rule_op_mangle_purgechar_class_u_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'd') return rule_op_mangle_purgechar_class_d_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'h') return rule_op_mangle_purgechar_class_lh_utf16le (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 'H') return rule_op_mangle_purgechar_class_uh_utf16le (p0, p1, buf0, buf1, buf2, buf3, in_len);
+  else if ((u8)p0 == 's') return rule_op_mangle_purgechar_class_s_utf16le  (p0, p1, buf0, buf1, buf2, buf3, in_len);
 
   return in_len;
 }

@@ -7,6 +7,7 @@
 #include "inc_types.h"
 #include "inc_platform.h"
 #include "inc_common.h"
+
 #include "inc_rp_utf16le.h"
 #include "inc_rp_common.cl"
 
@@ -587,7 +588,7 @@ DECLSPEC int mangle_replace_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED con
   return len;
 }
 
-DECLSPEC int mangle_replace_class_l (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // TODO
+DECLSPEC int mangle_replace_class_l_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // TODO
 {
   for (int pos = 0; pos < len; pos++)
   {
@@ -599,7 +600,7 @@ DECLSPEC int mangle_replace_class_l (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED con
   return len;
 }
 
-DECLSPEC int mangle_replace_class_u (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+DECLSPEC int mangle_replace_class_u_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
 {
   for (int pos = 0; pos < len; pos++)
   {
@@ -611,7 +612,7 @@ DECLSPEC int mangle_replace_class_u (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED con
   return len;
 }
 
-DECLSPEC int mangle_replace_class_d (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+DECLSPEC int mangle_replace_class_d_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
 {
   for (int pos = 0; pos < len; pos++)
   {
@@ -623,7 +624,7 @@ DECLSPEC int mangle_replace_class_d (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED con
   return len;
 }
 
-DECLSPEC int mangle_replace_class_lh (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // TODO
+DECLSPEC int mangle_replace_class_lh_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // TODO
 {
   for (int pos = 0; pos < len; pos++)
   {
@@ -635,7 +636,7 @@ DECLSPEC int mangle_replace_class_lh (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED co
   return len;
 }
 
-DECLSPEC int mangle_replace_class_uh (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+DECLSPEC int mangle_replace_class_uh_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
 {
   for (int pos = 0; pos < len; pos++)
   {
@@ -647,7 +648,7 @@ DECLSPEC int mangle_replace_class_uh (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED co
   return len;
 }
 
-DECLSPEC int mangle_replace_class_s (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
+DECLSPEC int mangle_replace_class_s_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len)// TODO
 {
   for (int pos = 0; pos < len; pos++)
   {
@@ -661,12 +662,12 @@ DECLSPEC int mangle_replace_class_s (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED con
 
 DECLSPEC int mangle_replace_class_utf16le (MAYBE_UNUSED const u16 p0, MAYBE_UNUSED const u16 p1, PRIVATE_AS u16 *buf, const int len) // TODO
 {
-       if (p0 == 'l') return mangle_replace_class_l  (p0, p1, buf, len);
-  else if (p0 == 'u') return mangle_replace_class_u  (p0, p1, buf, len);
-  else if (p0 == 'd') return mangle_replace_class_d  (p0, p1, buf, len);
-  else if (p0 == 'h') return mangle_replace_class_lh (p0, p1, buf, len);
-  else if (p0 == 'H') return mangle_replace_class_uh (p0, p1, buf, len);
-  else if (p0 == 's') return mangle_replace_class_s  (p0, p1, buf, len);
+       if (p0 == 'l') return mangle_replace_class_l_utf16le  (p0, p1, buf, len);
+  else if (p0 == 'u') return mangle_replace_class_u_utf16le  (p0, p1, buf, len);
+  else if (p0 == 'd') return mangle_replace_class_d_utf16le  (p0, p1, buf, len);
+  else if (p0 == 'h') return mangle_replace_class_lh_utf16le (p0, p1, buf, len);
+  else if (p0 == 'H') return mangle_replace_class_uh_utf16le (p0, p1, buf, len);
+  else if (p0 == 's') return mangle_replace_class_s_utf16le  (p0, p1, buf, len);
 
   return len;
 }

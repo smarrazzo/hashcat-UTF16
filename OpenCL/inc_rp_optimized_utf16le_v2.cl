@@ -7,6 +7,7 @@
 #include "inc_types.h"
 #include "inc_platform.h"
 #include "inc_common.h"
+
 #include "inc_rp_optimized_utf16le_v2.h"
 #include "inc_rp_common.cl"
 
@@ -2388,7 +2389,7 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_s_utf16le_v2 MAYBE_UNUSED
   return in_len;
 }
 
-DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_utf16le_v2 MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u64 *buf0, MAYBE_UNUSED PRIVATE_AS u64 *buf1, const u32 in_len) //TODO
+DECLSPEC HC_INLINE_RP u32 rule_op_mangle_replace_class_utf16le_v2 (MAYBE_UNUSED const u32 p0, MAYBE_UNUSED const u32 p1, MAYBE_UNUSED PRIVATE_AS u64 *buf0, MAYBE_UNUSED PRIVATE_AS u64 *buf1, const u32 in_len) //TODO
 {
        if ((u8)p0 == 'l') return rule_op_mangle_replace_class_l_utf16le   (p0, p1, buf0, buf1, in_len);
   else if ((u8)p0 == 'u') return rule_op_mangle_replace_class_u_utf16le  (p0, p1, buf0, buf1, in_len);

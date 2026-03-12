@@ -272,6 +272,7 @@ DECLSPEC u32x hc_swap32   (const u32x v);
 DECLSPEC u32  hc_swap32_S (const u32  v);
 DECLSPEC u64x hc_swap64   (const u64x v);
 DECLSPEC u64  hc_swap64_S (const u64  v);
+DECLSPEC u64  hc_swap64_S2 (const u64  v);
 
 // byte operations
 
@@ -289,7 +290,7 @@ DECLSPEC u32x hc_add3           (const u32x a, const u32x b, const u32x c);
 DECLSPEC u32  hc_add3_S         (const u32  a, const u32  b, const u32  c);
 DECLSPEC u32x hc_bfe            (const u32x a, const u32x b, const u32x c);
 DECLSPEC u32  hc_bfe_S          (const u32  a, const u32  b, const u32  c);
-DECLSPEC u64  hc_bfe_S64         (const u64  a, const u64  b, const u64  c);
+DECLSPEC u64  hc_bfe_S64        (const u64  a, const u64  b, const u64  c);
 DECLSPEC u32x hc_lop_0x96       (const u32x a, const u32x b, const u32x c);
 DECLSPEC u32  hc_lop_0x96_S     (const u32  a, const u32  b, const u32  c);
 
@@ -331,6 +332,8 @@ DECLSPEC int is_valid_base58_8 (const u8 v);
 DECLSPEC int is_valid_base58_32 (const u32 v);
 DECLSPEC int is_valid_printable_8 (const u8 v);
 DECLSPEC int is_valid_printable_32 (const u32 v);
+DECLSPEC int is_valid_printable_8_incl_common_control (const u8 v);
+DECLSPEC int is_valid_printable_32_incl_common_control (const u32 v);
 DECLSPEC int hc_find_keyboard_layout_map (const u32 search, const int search_len, LOCAL_AS keyboard_layout_mapping_t *s_keyboard_layout_mapping_buf, const int keyboard_layout_mapping_cnt);
 DECLSPEC int hc_execute_keyboard_layout_mapping (PRIVATE_AS u32 *w, const int pw_len, LOCAL_AS keyboard_layout_mapping_t *s_keyboard_layout_mapping_buf, const int keyboard_layout_mapping_cnt);
 DECLSPEC int count_bits_32 (const u32 v0, const u32 v1);
@@ -372,9 +375,12 @@ DECLSPEC void truncate_block_4x4_be_S (PRIVATE_AS u32 *w0, const u32 len);
 DECLSPEC void truncate_block_16x4_le_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, PRIVATE_AS u32 *w2, PRIVATE_AS u32 *w3, const u32 len);
 DECLSPEC void truncate_block_16x4_be_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, PRIVATE_AS u32 *w2, PRIVATE_AS u32 *w3, const u32 len);
 DECLSPEC void set_mark_1x4_S (PRIVATE_AS u32 *v, const u32 offset);
+DECLSPEC void set_mark_1x4_S_16 (PRIVATE_AS u32 *v, const u32 offset);
 DECLSPEC void set_mark_1x16_S_16 (PRIVATE_AS u32 *v, const u32 offset);
 DECLSPEC void set_mark_1x4_S64 (PRIVATE_AS u64 *v, const u32 offset);
+DECLSPEC void set_mark_1x4_S_64 (PRIVATE_AS u64 *v, const u32 offset);
 DECLSPEC void append_helper_1x4_S (PRIVATE_AS u32 *r, const u32 v, PRIVATE_AS const u32 *m);
+DECLSPEC void append_helper_1x4_S64 (PRIVATE_AS u64 *r, const u64 v, PRIVATE_AS const u64 *m);
 DECLSPEC void append_0x01_2x4_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, const u32 offset);
 DECLSPEC void append_0x06_2x4_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, const u32 offset);
 DECLSPEC void append_0x01_4x4_S (PRIVATE_AS u32 *w0, PRIVATE_AS u32 *w1, PRIVATE_AS u32 *w2, PRIVATE_AS u32 *w3, const u32 offset);
