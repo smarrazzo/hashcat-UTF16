@@ -15,11 +15,10 @@ wordlist_file = BASE_DIR / "wordlists" / "dico.txt"
 rules_file = BASE_DIR / "rules" / "rules.txt"
 
 # Dossier contenant l'exécutable hashcat : ../../hashcat
-HASHCAT_DIR = BASE_DIR.parent / "hashcat"
 if os.name == "nt":
-    hashcat_bin = HASHCAT_DIR / "hashcat.exe"
+    hashcat_bin = BASE_DIR.parent / "hashcat.exe"
 else:
-    hashcat_bin = HASHCAT_DIR / "hashcat"
+    hashcat_bin = BASE_DIR.parent / "hashcat"
 
 salt = "123456"
 user = "administrator"
