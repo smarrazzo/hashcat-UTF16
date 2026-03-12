@@ -1,15 +1,32 @@
-#hashcat.exe -a 0 -m 1102 ..\test\test_rules\h.txt ..\test\test_rules\dico.txt -r ..\test\test_rules\rules.txt --potfile-disable -O --encoding-to=utf16le -u1 -n1 -Y 1 --backend-vector=1  --force
-
-import hashlib,binascii
+from pathlib import Path
+import hashlib, binascii
 from passlib.hash import msdcc
 import codecs
+import os
+import subprocess
 
-f = open("h.txt", "w")
-ff = codecs.open("h_password.txt","w", "utf-8")
-#fff = codecs.open("dico.txt","w", "utf-8")
-salt = "administrator"
+module = 1102
 
-words = ["Δâδ123ΔδЖжabПп","δâδ123δδжжabпп","ΔÂΔ123ΔΔЖЖABПП","Δâδ123δδжжabпп","δÂΔ123ΔΔЖЖABПП",
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+h_file = BASE_DIR / "hashes" / f"h_m{module}.txt"
+hp_file = BASE_DIR / "hashes" / f"h_password_m{module}.txt"
+wordlist_file = BASE_DIR / "wordlists" / "dico.txt"
+rules_file = BASE_DIR / "rules" / "rules.txt"
+
+# Dossier contenant l'exécutable hashcat : ../../hashcat
+HASHCAT_DIR = BASE_DIR.parent / "hashcat"
+if os.name == "nt":
+    hashcat_bin = HASHCAT_DIR / "hashcat.exe"
+else:
+    hashcat_bin = HASHCAT_DIR / "hashcat"
+
+salt = "123456"
+user = "administrator"
+
+words_dico = ["Δâδ123ΔδЖжabПп","Δâδ 123 ΔδЖ жa bПп","Δâδc123cΔδЖcжacbПп","Δâδ123ΔδЖжab","Δâδ123Δδ"]
+rules = [":","l","u","c","C","t","T7","32δ","r",":d",":p2",":f","{","}","$Â","^Â","[","]","D5","x56","O56","i6Â","o5Â","'4","sδж","@δ","z3","Z3","q","k","K","*28","L3","R2","+2","-2",".2",",2","y3","Y3","E","ec"]
+passwords = ["Δâδ123ΔδЖжabПп","δâδ123δδжжabпп","ΔÂΔ123ΔΔЖЖABПП","Δâδ123δδжжabпп","δÂΔ123ΔΔЖЖABПП",
          "δÂΔ123δΔжЖABпП","Δâδ123ΔΔЖжabПп","Δâδ123ΔδжжabПп","пПbaжЖδΔ321δâΔ","Δâδ123ΔδЖжabΔâδ123ΔδЖжab",
          "Δâδ123ΔδΔâδ123ΔδΔâδ123Δδ","Δâδ123ΔδЖжabbaжЖδΔ321δâΔ","âδ123ΔδЖжabПпΔ","пΔâδ123ΔδЖжabП",
          "ÂΔâδ123ΔδЖжabПп","Δâδ123ΔδЖжabПпÂ","âδ123ΔδЖжabПп","Δâδ123ΔδЖжabП","Δâδ12ΔδЖжabПп",
@@ -18,23 +35,39 @@ words = ["Δâδ123ΔδЖжabПп","δâδ123δδжжabпп","ΔÂΔ123ΔΔЖЖA
          "ΔâЖ123ΔδδжabПп", "Δâδb23ΔδЖжabПп","Δâǚ123ΔδЖжabПп","Δâε123ΔδЖжabПп","Δâγ123ΔδЖжabПп",
          "Δâ1123ΔδЖжabПп","Δââ123ΔδЖжabПп","ΔâδΔâδ123ΔδЖжabПп","Δâδ123ΔδЖжabПпbПп","Δâδ 123 Δδж Жa Bпп",
          "Δâδc123cΔδжcЖacBпп"]
-#words1 = []
-#words = []
 
-#for i in range(31):
-#    words1.append("Δ"*(i+1))
-#    words.append("Δ"+"δ"*i)
+options = (
+    f"-a 0 -m {module} "
+    f"{h_file} {wordlist_file} -r {rules_file} "
+    f"--potfile-disable -O --encoding-to=utf16le -u1 -n1 -Y 1 "
+    f"--backend-vector=1 --force"
+)
+hf = open(h_file, "w")
+hpf = codecs.open(hp_file,"w", "utf-8")
+wf = codecs.open(wordlist_file,"w", "utf-8")
+rf = codecs.open(rules_file,"w", "utf-8")
 
-for word in words:
+for rule in rules:
+    rf.write(rule+'\n')
+
+for password in passwords:
     try:
-        h = msdcc.hash(word, user=salt)
-        f.write(h+':'+salt+'\n')
-        ff.write(h+':'+salt+':'+word+'\n')
+        h = msdcc.hash(password, user=user)
+        hf.write(h+':'+user+'\n')
+        hpf.write(h+':'+user+':'+password+'\n')
 
     except Exception as e:
        print(e)
-#for word in words1:
-#    fff.write(word+'\n') 
-f.close()
-ff.close()
-#fff.close()
+
+for word in words_dico:
+    wf.write(word+'\n') 
+    
+hf.close()
+hpf.close()
+wf.close()
+rf.close()
+
+# Lancer hashcat avec la variable options
+cmd_display = f"{hashcat_bin} {options}"
+print(f"Lancement de hashcat : {cmd_display}")
+subprocess.run(f"{hashcat_bin} {options}", shell=True, check=True)
