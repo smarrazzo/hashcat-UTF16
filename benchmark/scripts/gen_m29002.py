@@ -25,7 +25,7 @@ salt = "123456"
 username = "admin"
 
 words_dico = ["Δâδ123ΔδЖжabПп","Δâδ 123 ΔδЖ жa bПп","Δâδc123cΔδЖcжacbПп","Δâδ123ΔδЖжab","Δâδ123Δδ"]
-rules = [":","l","u","c","C","t","T7","32δ","r",":d",":p2",":f","{","}","$Â","^Â","[","]","D5","x56","O56","i6Â","o5Â","'4","sδж","@δ","z3","Z3","q","k","K","*28","L3","R2","+2","-2",".2",",2","y3","Y3","E","ec"]
+rules = [":","l","u","c","C","t","T7","32δ","r","d","p2","f","{","}","$Â","^Â","[","]","D5","x56","O56","i6Â","o5Â","'4","sδж","@δ","z3","Z3","q","k","K","*28","L3","R2","+2","-2",".2",",2","y3","Y3","E","ec"]
 passwords = ["Δâδ123ΔδЖжabПп","δâδ123δδжжabпп","ΔÂΔ123ΔΔЖЖABПП","Δâδ123δδжжabпп","δÂΔ123ΔΔЖЖABПП",
          "δÂΔ123δΔжЖABпП","Δâδ123ΔΔЖжabПп","Δâδ123ΔδжжabПп","пПbaжЖδΔ321δâΔ","Δâδ123ΔδЖжabΔâδ123ΔδЖжab",
          "Δâδ123ΔδΔâδ123ΔδΔâδ123Δδ","Δâδ123ΔδЖжabbaжЖδΔ321δâΔ","âδ123ΔδЖжabПпΔ","пΔâδ123ΔδЖжabП",
@@ -50,14 +50,14 @@ rf = codecs.open(rules_file,"w", "utf-8")
 for rule in rules:
     rf.write(rule+'\n')
 
-for password in passwords:
+for i in range(len(passwords)):
     try:
         h = SHA1.new()
         hh = SHA1.new()
-        h.update(username.encode('utf-16le')+b':'+password.encode('utf-16le'))
+        h.update(username.encode('utf-16le')+b':'+passwords[i].encode('utf-16le'))
         hh.update(salt.encode('utf8')+h.digest())
         hf.write(hh.hexdigest()+':'+username+":"+salt+'\n')
-        hpf.write(hh.hexdigest()+':'+username+":"+salt+':'+password+'\n')
+        hpf.write(hh.hexdigest()+':'+username+":"+salt+':'+passwords[i]+':'+rules[i]+'\n')
 
     except Exception as e:
        print(e)
@@ -117,7 +117,7 @@ for h in sorted(recovered_hashes):
     print(f"{h}:{hp_ref[h]}")
 
 if unrecovered:
-    print("\n--- Hash and password NOT recovered ---")
+    print("\n--- Hash and passwords[i] NOT recovered ---")
     for h in sorted(unrecovered):
         print(f"{h}:{hp_ref[h]}")
 else:
