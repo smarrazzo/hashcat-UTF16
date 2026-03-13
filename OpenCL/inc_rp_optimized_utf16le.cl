@@ -1501,7 +1501,7 @@ DECLSPEC void append_block1_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
   append_helper_1x4_S (buf3, ((offset8 == 3) ? tmp : 0), v); 
 }
 
-DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 *buf0, PRIVATE_AS u32 *buf1, PRIVATE_AS u32 *buf2, PRIVATE_AS u32 *buf3, PRIVATE_AS const u32 *src_l0, PRIVATE_AS const u32 *src_l1, PRIVATE_AS const u32 *src_l2, PRIVATE_AS const u32 *src_l3, PRIVATE_AS const u32 *src_r0, PRIVATE_AS const u32 *src_r1, PRIVATE_AS const u32 *src_r2, PRIVATE_AS const u32 *src_r3)  // TODO
+DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 *buf0, PRIVATE_AS u32 *buf1, PRIVATE_AS u32 *buf2, PRIVATE_AS u32 *buf3, PRIVATE_AS const u32 *src_l0, PRIVATE_AS const u32 *src_l1, PRIVATE_AS const u32 *src_l2, PRIVATE_AS const u32 *src_l3, PRIVATE_AS const u32 *src_r0, PRIVATE_AS const u32 *src_r1, PRIVATE_AS const u32 *src_r2, PRIVATE_AS const u32 *src_r3) // fixed , check perf todo
 {
   u32 s0 = 0;
   u32 s1 = 0;
@@ -1520,7 +1520,7 @@ DECLSPEC void append_block8_optimized_utf16le (const u32 offset, PRIVATE_AS u32 
   u32 s14 = 0;
   u32 s15 = 0;
 
-  const int offset_switch = offset / 2;
+  const int offset_switch = offset / 4;
 
   const u32 src_r00 = src_r0[0];
   const u32 src_r01 = src_r0[1];
@@ -5081,7 +5081,7 @@ DECLSPEC u32 apply_rules_optimized_utf16le (CONSTANT_AS const u64 *cmds, PRIVATE
   {
     const u64 cmd = cmds[i];
     
-    printf(" cmd : %.16llX \n", cmd);
+    printf(" cmd : %.16lX \n", cmd);
     const u32 name = (cmd >>  0) & 0xffff;
     const u32 p0   = (cmd >>  16) & 0xffff;
     const u32 p1   = (cmd >>  32) & 0xffff;
@@ -5106,7 +5106,7 @@ DECLSPEC u32 apply_rules_optimized_utf16le (CONSTANT_AS const u64 *cmds, PRIVATE
 
 DECLSPEC u32x apply_rules_vect_optimized_utf16le (PRIVATE_AS const u32 *pw_buf0, PRIVATE_AS const u32 *pw_buf1, PRIVATE_AS const u32 *pw_buf2, PRIVATE_AS const u32 *pw_buf3, const u32 pw_len, CONSTANT_AS const kernel_rule_t *kernel_rules, const u32 il_pos, PRIVATE_AS u32x *buf0, PRIVATE_AS u32x *buf1, PRIVATE_AS u32x *buf2, PRIVATE_AS u32x *buf3)
 {
-  printf("cmd : %.8X  cmd64 : %.16llX  il_pos : %d \n", kernel_rules[il_pos].cmds[0], kernel_rules[il_pos].cmds[0], il_pos);
+  printf("cmd : %.8lX  cmd64 : %.16lX  il_pos : %d \n", kernel_rules[il_pos].cmds[0], kernel_rules[il_pos].cmds[0], il_pos);
   #if VECT_SIZE == 1
 
   buf0[0] = pw_buf0[0];
