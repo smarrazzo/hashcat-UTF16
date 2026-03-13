@@ -55,7 +55,7 @@ for i in range(len(passwords)):
         h = SHA1.new()
         h.update(passwords[i].encode('utf-16le'))
         hf.write(base64.b64encode(h.digest()).decode('utf-8')+'\n')
-        hpf.write(base64.b64encode(h.digest()).decode('utf-8')+passwords[i]+'\n')
+        hpf.write(base64.b64encode(h.digest()).decode('utf-8')+':'+passwords[i]+':'+rules[i]+'\n')
 
     except Exception as e:
        print(e)
@@ -96,7 +96,7 @@ with codecs.open(hp_file, "r", "utf-8") as f:
 recovered_hashes = set()
 recovered_line = None
 for line in combined.splitlines():
-    m = re.match(r"^([a-fA-F0-9]{32}):(.*)$", line.strip())
+    m = re.match(r"^(.+):(.*)$", line.strip())
     if m:
         recovered_hashes.add(m.group(1))
     if "Recovered" in line and "Digests" in line:

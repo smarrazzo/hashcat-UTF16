@@ -98,7 +98,7 @@ with codecs.open(hp_file, "r", "utf-8") as f:
 recovered_hashes = set()
 recovered_line = None
 for line in combined.splitlines():
-    m = re.match(r"^([a-fA-F0-9]{32}):(.*)$", line.strip())
+    m = re.match(r"^(\$episerver\$\*1\*.+\*.+\$):(.+)", line.strip())
     if m:
         recovered_hashes.add(m.group(1))
     if "Recovered" in line and "Digests" in line:
