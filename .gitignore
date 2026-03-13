@@ -51,3 +51,4 @@ __pycache__/
 .python-version
 benchmark/hashes/h_*.txt
 benchmark/hashes/h_password_*.txt
+benchmark/wordlists/rockyou.txt

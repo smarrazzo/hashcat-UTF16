@@ -5081,23 +5081,23 @@ DECLSPEC u32 apply_rules_optimized_utf16le (CONSTANT_AS const u64 *cmds, PRIVATE
   {
     const u64 cmd = cmds[i];
     
-    printf(" cmd : %.16lX \n", cmd);
+    //printf(" cmd : %.16lX \n", cmd);
     const u32 name = (cmd >>  0) & 0xffff;
     const u32 p0   = (cmd >>  16) & 0xffff;
     const u32 p1   = (cmd >>  32) & 0xffff;
 
-    printf("name : %.8X \n", name);
-    printf("p0 : %.8X \n", p0);
-    printf("p1 : %.8X \n", p1);
+    //printf("name : %.8X \n", name);
+    //printf("p0 : %.8X \n", p0);
+    //printf("p1 : %.8X \n", p1);
  
-    printf("AV len %d : buf0[0] : %.8X buf0[1] : %.8X buf0[2] : %.8X buf0[3] : %.8X buf1[0] : %.8X buf1[1] : %.8X buf1[2] : %.8X buf1[3] : %.8X\n", out_len, *buf0,*(buf0+1),*(buf0+2),*(buf0+3),*buf1,*(buf1+1),*(buf1+2),*(buf1+3));
-    printf("AV len %d : buf2[0] : %.8X buf2[1] : %.8X buf2[2] : %.8X buf2[3] : %.8X buf3[0] : %.8X buf3[1] : %.8X buf3[2] : %.8X buf3[3] : %.8X\n", out_len, *buf2,*(buf2+1),*(buf2+2),*(buf2+3),*buf3,*(buf3+1),*(buf3+2),*(buf3+3));
+    //printf("AV len %d : buf0[0] : %.8X buf0[1] : %.8X buf0[2] : %.8X buf0[3] : %.8X buf1[0] : %.8X buf1[1] : %.8X buf1[2] : %.8X buf1[3] : %.8X\n", out_len, *buf0,*(buf0+1),*(buf0+2),*(buf0+3),*buf1,*(buf1+1),*(buf1+2),*(buf1+3));
+    //printf("AV len %d : buf2[0] : %.8X buf2[1] : %.8X buf2[2] : %.8X buf2[3] : %.8X buf3[0] : %.8X buf3[1] : %.8X buf3[2] : %.8X buf3[3] : %.8X\n", out_len, *buf2,*(buf2+1),*(buf2+2),*(buf2+3),*buf3,*(buf3+1),*(buf3+2),*(buf3+3));
 
     // we need to guarantee input length < 32 otherwise functions like rule_op_mangle_switch_last() and others will read out of boundary
     out_len = apply_rule_optimized_utf16le (name, p0, p1, buf0, buf1, buf2, buf3, out_len);
 
-    printf("AP len %d : buf0[0] : %.8X buf0[1] : %.8X buf0[2] : %.8X buf0[3] : %.8X buf1[0] : %.8X buf1[1] : %.8X buf1[2] : %.8X buf1[3] : %.8X\n", out_len, *buf0,*(buf0+1),*(buf0+2),*(buf0+3),*buf1,*(buf1+1),*(buf1+2),*(buf1+3));
-    printf("AP len %d : buf2[0] : %.8X buf2[1] : %.8X buf2[2] : %.8X buf2[3] : %.8X buf3[0] : %.8X buf3[1] : %.8X buf3[2] : %.8X buf3[3] : %.8X\n", out_len, *buf2,*(buf2+1),*(buf2+2),*(buf2+3),*buf3,*(buf3+1),*(buf3+2),*(buf3+3));
+    //printf("AP len %d : buf0[0] : %.8X buf0[1] : %.8X buf0[2] : %.8X buf0[3] : %.8X buf1[0] : %.8X buf1[1] : %.8X buf1[2] : %.8X btn1[3] : %.8X\n", out_len, *buf0,*(buf0+1),*(buf0+2),*(buf0+3),*buf1,*(buf1+1),*(buf1+2),*(buf1+3));
+    //printf("AP len %d : buf2[0] : %.8X btn2[1] : %.8X btn2[2] : %.8X btn2[3] : %.8X btn3[0] : %.8X btn3[1] : "%.8X btn3[2] : "%.8X btn3[3} ; "%.8x\n", out_len, *buf2,*(buf2+1),*(buf2+2),*(buf2+3),*btn3,*(btn3+1),*(btn3+2),*(btn3+3));
 
   }
 
@@ -5106,7 +5106,7 @@ DECLSPEC u32 apply_rules_optimized_utf16le (CONSTANT_AS const u64 *cmds, PRIVATE
 
 DECLSPEC u32x apply_rules_vect_optimized_utf16le (PRIVATE_AS const u32 *pw_buf0, PRIVATE_AS const u32 *pw_buf1, PRIVATE_AS const u32 *pw_buf2, PRIVATE_AS const u32 *pw_buf3, const u32 pw_len, CONSTANT_AS const kernel_rule_t *kernel_rules, const u32 il_pos, PRIVATE_AS u32x *buf0, PRIVATE_AS u32x *buf1, PRIVATE_AS u32x *buf2, PRIVATE_AS u32x *buf3)
 {
-  printf("cmd : %.8lX  cmd64 : %.16lX  il_pos : %d \n", kernel_rules[il_pos].cmds[0], kernel_rules[il_pos].cmds[0], il_pos);
+  //printf("cmd : %.8lX  cmd64 : %.16lX  il_pos : %d \n", kernel_rules[il_pos].cmds[0], kernel_rules[il_pos].cmds[0], il_pos);
   #if VECT_SIZE == 1
 
   buf0[0] = pw_buf0[0];
