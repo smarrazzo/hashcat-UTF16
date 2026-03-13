@@ -918,10 +918,39 @@ char *status_get_guess_candidates_dev (const hashcat_ctx_t *hashcat_ctx, const i
   const bool need_hex1 = need_hexify (plain_ptr1, plain_len1, 0, always_ascii);
   const bool need_hex2 = need_hexify (plain_ptr2, plain_len2, 0, always_ascii);
 
-  if((need_hex1 == true) || (need_hex2 == true))
+  if (hashcat_ctx->module_ctx->module_iconv != MODULE_DEFAULT)
+  {
+    const user_options_t *user_options = hashcat_ctx->user_options;
+
+    iconv_t iconv_ctx = iconv_open (user_options->encoding_from, user_options->encoding_to);
+
+    char iconv_tmp1[HCBUFSIZ_TINY] = { 0 };
+    char iconv_tmp2[HCBUFSIZ_TINY] = { 0 };
+
+    char  *in_ptr1  = (char *) plain_ptr1;
+    size_t in_len1  = (size_t) plain_len1;
+    char  *out_ptr1 = iconv_tmp1;
+    size_t out_sz1  = HCBUFSIZ_TINY - 1;
+
+    iconv (iconv_ctx, &in_ptr1, &in_len1, &out_ptr1, &out_sz1);
+    iconv_tmp1[HCBUFSIZ_TINY - 1 - out_sz1] = 0;
+
+    char  *in_ptr2  = (char *) plain_ptr2;
+    size_t in_len2  = (size_t) plain_len2;
+    char  *out_ptr2 = iconv_tmp2;
+    size_t out_sz2  = HCBUFSIZ_TINY - 1;
+
+    iconv (iconv_ctx, &in_ptr2, &in_len2, &out_ptr2, &out_sz2);
+    iconv_tmp2[HCBUFSIZ_TINY - 1 - out_sz2] = 0;
+
+    iconv_close (iconv_ctx);
+
+    snprintf (display, HCBUFSIZ_TINY, "%s -> %s", iconv_tmp1, iconv_tmp2);
+  }
+  else if ((need_hex1 == true) || (need_hex2 == true))
   {
     // Right candidate needs to be $HEX-ed
-    if(need_hex1 == false)
+    if (need_hex1 == false)
     {
       exec_hexify (plain_ptr2, plain_len2, plain_ptr2);
 
@@ -931,17 +960,18 @@ char *status_get_guess_candidates_dev (const hashcat_ctx_t *hashcat_ctx, const i
       snprintf (display, HCBUFSIZ_TINY, "%s -> $HEX[%s]", plain_ptr1, plain_ptr2);
     }
     // Left candidate needs to be $HEX-ed
-    else if(need_hex2 == false)
+    else if (need_hex2 == false)
     {
-    exec_hexify (plain_ptr1, plain_len1, plain_ptr1);
+      exec_hexify (plain_ptr1, plain_len1, plain_ptr1);
 
-    plain_ptr1[plain_len1 * 2] = 0;
-    plain_ptr2[plain_len2] = 0;
+      plain_ptr1[plain_len1 * 2] = 0;
+      plain_ptr2[plain_len2] = 0;
 
-    snprintf (display, HCBUFSIZ_TINY, "$HEX[%s] -> %s", plain_ptr1, plain_ptr2);
+      snprintf (display, HCBUFSIZ_TINY, "$HEX[%s] -> %s", plain_ptr1, plain_ptr2);
     }
     // Both candidates need to be $HEX-ed
-    else {
+    else
+    {
       exec_hexify (plain_ptr1, plain_len1, plain_ptr1);
       exec_hexify (plain_ptr2, plain_len2, plain_ptr2);
 
