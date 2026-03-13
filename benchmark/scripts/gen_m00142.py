@@ -69,7 +69,7 @@ rf.close()
 
 
 cmd_display = f"{hashcat_bin} {options}"
-#print(f"Run hashcat : {cmd_display}")
+print(f"Run hashcat : {cmd_display}")
 result = subprocess.run(
     f"{hashcat_bin} {options}",
     shell=True,
