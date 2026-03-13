@@ -94,7 +94,7 @@ with codecs.open(hp_file, "r", "utf-8") as f:
 recovered_hashes = set()
 recovered_line = None
 for line in combined.splitlines():
-    m = re.match(r"^([a-fA-F0-9]{32}):(.+)$", line.strip())
+    m = re.match(r"^([a-fA-F0-9]{32}):(.*)$", line.strip())
     if m:
         recovered_hashes.add(m.group(1))
     if "Recovered" in line and "Digests" in line:
@@ -108,9 +108,14 @@ if recovered_line:
 all_hashes = set(hp_ref.keys())
 unrecovered = all_hashes - recovered_hashes
 
+print("\n--- hashcat hash recovered output ---")
+for h in sorted(recovered_hashes):
+    print(f"{h}:{hp_ref[h]}")
+
 if unrecovered:
     print("\n--- Hash and password NOT recovered ---")
     for h in sorted(unrecovered):
         print(f"{h}:{hp_ref[h]}")
 else:
     print("\nAll hashes have been recovered.")
+
