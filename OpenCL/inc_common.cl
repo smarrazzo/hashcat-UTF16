@@ -1954,11 +1954,11 @@ DECLSPEC u32 hc_bfe_S (const u32 a, const u32 b, const u32 c)
   return r;
 }
 
-DECLSPEC u64 hc_bfe_S64 (const u64 a, const u64 b, const u64 c)
+DECLSPEC u64 hc_bfe_S64 (const u64 a, const u32 b, const u32 c)
 {
   u64 r = 0;
 
-  asm volatile ("bfe.u64 %0, %1, %2, %3;" : "=l"(r) : "l"(a), "l"(b), "l"(c));
+  asm volatile ("bfe.u64 %0, %1, %2, %3;" : "=l"(r) : "l"(a), "r"(b), "r"(c));
 
   return r;
 }

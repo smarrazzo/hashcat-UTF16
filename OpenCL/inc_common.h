@@ -290,7 +290,7 @@ DECLSPEC u32x hc_add3           (const u32x a, const u32x b, const u32x c);
 DECLSPEC u32  hc_add3_S         (const u32  a, const u32  b, const u32  c);
 DECLSPEC u32x hc_bfe            (const u32x a, const u32x b, const u32x c);
 DECLSPEC u32  hc_bfe_S          (const u32  a, const u32  b, const u32  c);
-DECLSPEC u64  hc_bfe_S64        (const u64  a, const u64  b, const u64  c);
+DECLSPEC u64  hc_bfe_S64        (const u64  a, const u32  b, const u32  c);
 DECLSPEC u32x hc_lop_0x96       (const u32x a, const u32x b, const u32x c);
 DECLSPEC u32  hc_lop_0x96_S     (const u32  a, const u32  b, const u32  c);
 

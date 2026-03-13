@@ -32,28 +32,20 @@ KERNEL_FQ void m01002_m04 (KERN_ATTR_RULES ())
 
   if (gid >= GID_CNT) return;
 
-  u32 pw_buf0[4];
-  u32 pw_buf1[4];
-  u32 pw_buf2[4];
-  u32 pw_buf3[4];  
+  u64 pw_buf0[4];
+  u64 pw_buf1[4];
+  
 
 
-  pw_buf0[0] = pws[gid].i[0];
-  pw_buf0[1] = pws[gid].i[1];
-  pw_buf0[2] = pws[gid].i[2];
-  pw_buf0[3] = pws[gid].i[3];
-  pw_buf1[0] = pws[gid].i[4];
-  pw_buf1[1] = pws[gid].i[5];
-  pw_buf1[2] = pws[gid].i[6];
-  pw_buf1[3] = pws[gid].i[7];
-  pw_buf2[0] = pws[gid].i[8];
-  pw_buf2[1] = pws[gid].i[9];
-  pw_buf2[2] = pws[gid].i[10];
-  pw_buf2[3] = pws[gid].i[11];
-  pw_buf3[0] = pws[gid].i[12];
-  pw_buf3[1] = pws[gid].i[13];
-  pw_buf3[2] = pws[gid].i[14];
-  pw_buf3[3] = pws[gid].i[15];
+  pw_buf0[0] = ((u64)(pws[gid].i[0])+((u64)(pws[gid].i[1])<<32));
+  pw_buf0[1] = ((u64)(pws[gid].i[2])+((u64)(pws[gid].i[3])<<32));
+  pw_buf0[2] = ((u64)(pws[gid].i[4])+((u64)(pws[gid].i[5])<<32));
+  pw_buf0[3] = ((u64)(pws[gid].i[6])+((u64)(pws[gid].i[7])<<32));
+  pw_buf1[0] = ((u64)(pws[gid].i[8])+((u64)(pws[gid].i[9])<<32));
+  pw_buf1[1] = ((u64)(pws[gid].i[10])+((u64)(pws[gid].i[11])<<32));
+  pw_buf1[2] = ((u64)(pws[gid].i[12])+((u64)(pws[gid].i[13])<<32));
+  pw_buf1[3] = ((u64)(pws[gid].i[14])+((u64)(pws[gid].i[15])<<32));
+
 
   const u32 pw_len = pws[gid].pw_len & 127;
 
@@ -68,7 +60,7 @@ KERNEL_FQ void m01002_m04 (KERN_ATTR_RULES ())
     u32x w2[4] = { 0 };
     u32x w3[4] = { 0 };
 
-    const u32x out_len = apply_rules_vect_optimized_utf16le (pw_buf0, pw_buf1, pw_buf2, pw_buf3, pw_len, rules_buf, il_pos, w0, w1, w2, w3);
+    const u32x out_len = apply_rules_vect_optimized_utf16le_v2 (pw_buf0, pw_buf1, pw_len, rules_buf, il_pos, w0, w1, w2, w3);
     append_0x80_4x4_VV (w0, w1, w2, w3, out_len);
 
     w3[2] = out_len * 8 ;
@@ -158,27 +150,17 @@ KERNEL_FQ void m01002_s04 (KERN_ATTR_RULES ())
 
   if (gid >= GID_CNT) return;
 
-  u32 pw_buf0[4];
-  u32 pw_buf1[4];
-  u32 pw_buf2[4];
-  u32 pw_buf3[4];
+  u64 pw_buf0[4];
+  u64 pw_buf1[4];
 
-  pw_buf0[0] = pws[gid].i[0];
-  pw_buf0[1] = pws[gid].i[1];
-  pw_buf0[2] = pws[gid].i[2];
-  pw_buf0[3] = pws[gid].i[3];
-  pw_buf1[0] = pws[gid].i[4];
-  pw_buf1[1] = pws[gid].i[5];
-  pw_buf1[2] = pws[gid].i[6];
-  pw_buf1[3] = pws[gid].i[7];
-  pw_buf2[0] = pws[gid].i[8];
-  pw_buf2[1] = pws[gid].i[9];
-  pw_buf2[2] = pws[gid].i[10];
-  pw_buf2[3] = pws[gid].i[11];
-  pw_buf3[0] = pws[gid].i[12];
-  pw_buf3[1] = pws[gid].i[13];
-  pw_buf3[2] = pws[gid].i[14];
-  pw_buf3[3] = pws[gid].i[15];
+  pw_buf0[0] = ((u64)(pws[gid].i[0])+((u64)(pws[gid].i[1])<<32));
+  pw_buf0[1] = ((u64)(pws[gid].i[2])+((u64)(pws[gid].i[3])<<32));
+  pw_buf0[2] = ((u64)(pws[gid].i[4])+((u64)(pws[gid].i[5])<<32));
+  pw_buf0[3] = ((u64)(pws[gid].i[6])+((u64)(pws[gid].i[7])<<32));
+  pw_buf1[0] = ((u64)(pws[gid].i[8])+((u64)(pws[gid].i[9])<<32));
+  pw_buf1[1] = ((u64)(pws[gid].i[10])+((u64)(pws[gid].i[11])<<32));
+  pw_buf1[2] = ((u64)(pws[gid].i[12])+((u64)(pws[gid].i[13])<<32));
+  pw_buf1[3] = ((u64)(pws[gid].i[14])+((u64)(pws[gid].i[15])<<32));
 
   const u32 pw_len = pws[gid].pw_len & 127;
 
@@ -205,7 +187,7 @@ KERNEL_FQ void m01002_s04 (KERN_ATTR_RULES ())
     u32x w2[4] = { 0 };
     u32x w3[4] = { 0 };
 
-    const u32x out_len = apply_rules_vect_optimized_utf16le (pw_buf0, pw_buf1, pw_buf2, pw_buf3, pw_len, rules_buf, il_pos, w0, w1, w2, w3);
+    const u32x out_len = apply_rules_vect_optimized_utf16le_v2 (pw_buf0, pw_buf1, pw_len, rules_buf, il_pos, w0, w1, w2, w3);
     append_0x80_4x4_VV (w0, w1, w2, w3, out_len);
 
     w3[2] = out_len * 8;
