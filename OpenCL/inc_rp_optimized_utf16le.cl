@@ -2159,6 +2159,7 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_toggle_at_sep_utf16le (MAYBE_UNUSED con
   {
     if ((rn >> i) & 1)
     {
+      occurence++;
       if (occurence == (p0/2))
       {
         ro = 1 << i;
@@ -2175,7 +2176,6 @@ DECLSPEC HC_INLINE_RP u32 rule_op_mangle_toggle_at_sep_utf16le (MAYBE_UNUSED con
 
         #endif
       }
-      occurence++;
     }
   }
 
