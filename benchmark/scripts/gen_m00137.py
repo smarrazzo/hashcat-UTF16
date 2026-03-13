@@ -40,7 +40,7 @@ options = (
     f"-a 0 -m {module} "
     f"{h_file} {wordlist_file} -r {rules_file} "
     f"--potfile-disable -O --encoding-to=utf16le -u1 -n1 -Y 1 "
-    f"--backend-vector=1 --force"
+    f"--backend-vector=1 --force "
     f"--self-test-disable"
 )
 hf = open(h_file, "w")
