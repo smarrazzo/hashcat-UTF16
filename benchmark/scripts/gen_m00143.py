@@ -54,8 +54,8 @@ for i in range(len(passwords)):
     try:
         h = SHA1.new()
         h.update(salt.encode('utf-8')+passwords[i].encode('utf-16le'))
-        tmp = b"$episerver$*0*"+b64.b64encode(salt.encode('utf8'))+b"*"+b64.b64encode(h.digest())
-        hf.write(tmp+b'\n')
+        tmp =  b"$episerver$*0*"+b64.b64encode(salt.encode('utf8'))+b"*"+b64.b64encode(h.digest())
+        hf.write(tmp.decode("utf8")+'\n')
         hpf.write(tmp.decode('utf8')+':'+passwords[i]+':'+rules[i]+'\n')
 
     except Exception as e:
