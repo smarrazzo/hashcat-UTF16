@@ -10,8 +10,8 @@
 #include M2S(INCLUDE_PATH/inc_types.h)
 #include M2S(INCLUDE_PATH/inc_platform.cl)
 #include M2S(INCLUDE_PATH/inc_common.cl)
-#include M2S(INCLUDE_PATH/inc_rp_optimized_utf16le.h)
-#include M2S(INCLUDE_PATH/inc_rp_optimized_utf16le.cl)
+#include M2S(INCLUDE_PATH/inc_rp_optimized_utf16le_v2.h)
+#include M2S(INCLUDE_PATH/inc_rp_optimized_utf16le_v2.cl)
 #include M2S(INCLUDE_PATH/inc_simd.cl)
 #include M2S(INCLUDE_PATH/inc_hash_md4.cl)
 #endif
