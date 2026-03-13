@@ -1,5 +1,6 @@
 from pathlib import Path
 import hashlib, binascii
+import re
 from Crypto.Hash import MD5
 import codecs
 import os
@@ -14,7 +15,7 @@ hp_file = BASE_DIR / "hashes" / f"h_password_m{module}.txt"
 wordlist_file = BASE_DIR / "wordlists" / "dico.txt"
 rules_file = BASE_DIR / "rules" / "rules.txt"
 
-# Dossier contenant l'exécutable hashcat : ../../hashcat
+
 if os.name == "nt":
     hashcat_bin = BASE_DIR.parent / "hashcat.exe"
 else:

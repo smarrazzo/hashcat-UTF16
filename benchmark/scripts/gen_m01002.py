@@ -1,5 +1,6 @@
 from pathlib import Path
 import hashlib, binascii
+import re
 from Crypto.Hash import MD4
 import codecs
 import os
@@ -14,7 +15,7 @@ hp_file = BASE_DIR / "hashes" / f"h_password_m{module}.txt"
 wordlist_file = BASE_DIR / "wordlists" / "dico.txt"
 rules_file = BASE_DIR / "rules" / "rules.txt"
 
-# Dossier contenant l'exécutable hashcat : ../../hashcat
+
 if os.name == "nt":
     hashcat_bin = BASE_DIR.parent / "hashcat.exe"
 else:
@@ -66,7 +67,51 @@ hpf.close()
 wf.close()
 rf.close()
 
-# Lancer hashcat avec la variable options
+
 cmd_display = f"{hashcat_bin} {options}"
-print(f"Lancement de hashcat : {cmd_display}")
-subprocess.run(f"{hashcat_bin} {options}", shell=True, check=True)
+#print(f"Run hashcat : {cmd_display}")
+result = subprocess.run(
+    f"{hashcat_bin} {options}",
+    shell=True,
+    check=False,
+    capture_output=True,
+    text=True,
+    encoding="utf-8",
+    errors="replace",
+)
+
+combined = (result.stdout or "") + "\n" + (result.stderr or "")
+
+
+hp_ref = {}
+with codecs.open(hp_file, "r", "utf-8") as f:
+    for line in f:
+        line = line.strip()
+        if ":" in line:
+            h, p = line.split(":", 1)
+            hp_ref[h.strip()] = p
+
+
+recovered_hashes = set()
+recovered_line = None
+for line in combined.splitlines():
+    m = re.match(r"^([a-fA-F0-9]{32}):(.+)$", line.strip())
+    if m:
+        recovered_hashes.add(m.group(1))
+    if "Recovered" in line and "Digests" in line:
+        recovered_line = line.strip()
+
+
+if recovered_line:
+    print(f"\n{recovered_line}")
+
+
+all_hashes = set(hp_ref.keys())
+unrecovered = all_hashes - recovered_hashes
+
+if unrecovered:
+    print("\n--- Hash and password NOT recovered ---")
+    for h in sorted(unrecovered):
+        print(f"{h}:{hp_ref[h]}")
+else:
+    print("\nAll hashes have been recovered.")
