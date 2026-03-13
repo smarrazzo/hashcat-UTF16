@@ -42,6 +42,7 @@ options = (
     f"{h_file} {wordlist_file} -r {rules_file} "
     f"--potfile-disable -O --encoding-to=utf16le -u1 -n1 -Y 1 "
     f"--backend-vector=1 --force"
+    f"--self-test-disable"
 )
 hf = open(h_file, "w")
 hpf = codecs.open(hp_file,"w", "utf-8")
