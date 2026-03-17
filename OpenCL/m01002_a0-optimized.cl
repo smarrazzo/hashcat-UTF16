@@ -189,7 +189,12 @@ KERNEL_FQ void m01002_s04 (KERN_ATTR_RULES ())
 
     const u32x out_len = apply_rules_vect_optimized_utf16le_v2 (pw_buf0, pw_buf1, pw_len, rules_buf, il_pos, w0, w1, w2, w3);
     append_0x80_4x4_VV (w0, w1, w2, w3, out_len);
-
+    printf("w0[0] : %.8X w0[1] : %.8X w0[2] : %.8X w0[3] : %.8X\n", w0[0], w0[1], w0[2], w0[3]);
+      printf("w1[0] : %.8X w1[1] : %.8X w1[2] : %.8X w1[3] : %.8X\n", w1[0], w1[1], w1[2], w1[3]);
+      printf("w2[0] : %.8X w2[1] : %.8X w2[2] : %.8X w2[3] : %.8X\n", w2[0], w2[1], w2[2], w2[3]);
+      printf("w3[0] : %.8X w3[1] : %.8X w3[2] : %.8X w3[3] : %.8X\n", w3[0], w3[1], w3[2], w3[3]);
+    
+ 
     w3[2] = out_len * 8;
     w3[3] = 0;
 
@@ -246,6 +251,7 @@ KERNEL_FQ void m01002_s04 (KERN_ATTR_RULES ())
     MD4_STEP (MD4_H , b, c, d, a, w3[1], MD4C02, MD4S23);
     MD4_STEP (MD4_H , a, b, c, d, w0[3], MD4C02, MD4S20);
 
+printf("a : %.8X  search : %.8X\n", a, search[0]);
     if (MATCHES_NONE_VS (a, search[0])) continue;
 
     MD4_STEP (MD4_H , d, a, b, c, w2[3], MD4C02, MD4S21);
